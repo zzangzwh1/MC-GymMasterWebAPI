@@ -30,7 +30,7 @@ namespace MC_GymMasterWebAPI.Controllers
             return NotFound();
         }
 
-        [HttpPost]
+        [HttpPost("register")]
         public async Task<ActionResult<Member>> InsertMember([FromBody] MemberDTO memberDto)
         {
             string s = "";
@@ -45,6 +45,7 @@ namespace MC_GymMasterWebAPI.Controllers
                 Address = memberDto.Address,
                 BirthDate = memberDto.BirthDate,
                 Email = memberDto.Email,
+                Password = memberDto.Password,                
                 CreationDate = DateTime.Now,
                 ExpirationDate = DateTime.Parse("2099-12-31"),
                 FirstName = memberDto.FirstName,
@@ -63,6 +64,25 @@ namespace MC_GymMasterWebAPI.Controllers
                 // Log the exception (ex) here using your preferred logging framework
                 return StatusCode(500, "An error occurred while saving the member.");
             }
+        }
+        [HttpPost("authenticate")]
+        public async Task<ActionResult> Authenticate([FromBody] MemberDTO member)
+        {
+            string s = "";
+            if (member is null)
+                return BadRequest();
+
+            try
+            {
+
+            var user = await _dbContext.Members.FirstOrDefaultAsync(x => x.UserId == member.UserId && x.Password == member.Password);
+            }
+            catch(Exception ex)
+            {
+                return NotFound(new { Message = "User Not Found" });
+            }
+            return Ok(new { Message = "Login Success" });
+            
         }
 
 
