@@ -2,7 +2,7 @@
 {
     public class MemberDTO
     {
-      
+  
         public string UserId { get; set; } = null!;
         public string Password { get; set; } = null;
 
@@ -20,6 +20,11 @@
 
         public string? Phone { get; set; }
 
-     
+        public DateTime CreationDate { get; set; }
+
+        public DateTime ExpirationDate { get; set; }
+
+
+
     }
 }

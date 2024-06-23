@@ -45,9 +45,9 @@ namespace MC_GymMasterWebAPI.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<Member>> InsertMember([FromBody] MemberDTO memberDto)
+        public async Task<ActionResult<MemberDTO>> InsertMember([FromBody] MemberDTO memberDto)
         {
-            string s = "";
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
