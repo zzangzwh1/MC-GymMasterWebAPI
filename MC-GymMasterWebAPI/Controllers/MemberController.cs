@@ -29,6 +29,20 @@ namespace MC_GymMasterWebAPI.Controllers
 
             return NotFound();
         }
+        [HttpGet("userId")]
+        public async Task<ActionResult<Member>> GetMemberByUsername(string userId)
+        {
+            var member = await _dbContext.Members
+                                         .Where(m => m.UserId == userId)
+                                         .FirstOrDefaultAsync();
+
+            if (member != null)
+            {
+                return Ok(member);
+            }
+
+            return NotFound();
+        }
 
         [HttpPost("register")]
         public async Task<ActionResult<Member>> InsertMember([FromBody] MemberDTO memberDto)
@@ -66,7 +80,7 @@ namespace MC_GymMasterWebAPI.Controllers
             }
         }
         [HttpPost("authenticate")]
-        public async Task<ActionResult> Authenticate([FromBody] MemberDTO member)
+        public async Task<ActionResult> Authenticate([FromBody] LoginDto member)
         {
             string s = "";
             if (member is null)

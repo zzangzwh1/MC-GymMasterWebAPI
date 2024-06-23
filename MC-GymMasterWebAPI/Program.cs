@@ -1,5 +1,3 @@
-
-
 using MC_GymMasterWebAPI.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,7 +22,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseCors(option => option.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader());
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
