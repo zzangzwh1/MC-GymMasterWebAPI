@@ -80,23 +80,32 @@ namespace MC_GymMasterWebAPI.Controllers
             }
         }
         [HttpPost("authenticate")]
-        public async Task<ActionResult> Authenticate([FromBody] LoginDto member)
+    
+        public async Task<IActionResult> Authenticate([FromBody] LoginDto loginInfo)
         {
-            string s = "";
-            if (member is null)
-                return BadRequest();
+            var user = await _dbContext.Members
+                .FirstOrDefaultAsync(u => u.UserId == loginInfo.UserId);
 
-            try
+            if (user == null)
             {
+                return Unauthorized(new { success = false, message = "Invalid UserId" });
+            }
 
-            var user = await _dbContext.Members.FirstOrDefaultAsync(x => x.UserId == member.UserId && x.Password == member.Password);
-            }
-            catch(Exception ex)
+            if (user.Password != loginInfo.Password)
             {
-                return NotFound(new { Message = "User Not Found" });
+                return Unauthorized(new { success = false, message = "Invalid Password" });
             }
-            return Ok(new { Message = "Login Success" });
-            
+
+            // Assuming you generate and set a JWT token here
+            // var token = GenerateJwtToken(user);
+            // Response.Cookies.Append("AuthToken", token, new CookieOptions
+            // {
+            //     HttpOnly = true,
+            //     Secure = true, // Ensure this is true in production for HTTPS
+            //     SameSite = SameSiteMode.Strict // Adjust based on your needs
+            // });
+
+            return Ok(new { success = true, message = "Authentication successful" });
         }
 
 
