@@ -43,6 +43,20 @@ namespace MC_GymMasterWebAPI.Controllers
 
             return NotFound();
         }
+        [HttpGet("memberId")]
+        public async Task<ActionResult<Member>> GetMemberIdByUserId(string memberId)
+        {
+            var member = await _dbContext.Members
+                                         .Where(m => m.UserId == memberId)
+                                         .FirstOrDefaultAsync();
+
+            if (member != null)
+            {
+                return Ok(member.MemberId);
+            }
+
+            return NotFound();
+        }
 
         [HttpPost("register")]
         public async Task<ActionResult<MemberDTO>> InsertMember([FromBody] MemberDTO memberDto)

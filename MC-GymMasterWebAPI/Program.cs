@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -16,13 +17,13 @@ builder.Services.AddDbContext<GymMasterContext>(options =>
 // Configure CORS to allow requests from the Angular app
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin",
+    options.AddPolicy("AllowAll",
         builder =>
         {
-            builder.WithOrigins("http://localhost:4200")
+            builder.WithOrigins("http://localhost:4200") // Update this if your Angular app is hosted on a different domain or port
                    .AllowAnyMethod()
                    .AllowAnyHeader()
-                   .AllowCredentials();
+                   .AllowCredentials(); // Only if you need to allow credentials (e.g., cookies)
         });
 });
 
@@ -38,10 +39,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Use the configured CORS policy
-app.UseCors("AllowSpecificOrigin");
+app.UseCors("AllowAll");
 
 // Authentication and Authorization middlewares
-app.UseAuthentication();
+app.UseAuthentication(); // Ensure you have authentication services configured if you use this
 app.UseAuthorization();
 
 app.MapControllers();
