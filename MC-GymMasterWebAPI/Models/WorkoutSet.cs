@@ -12,14 +12,15 @@ public partial class WorkoutSet
     public string? Part { get; set; }
 
     public int? SetCount { get; set; }
+    public int? RepCount { get; set; }
 
     public string? SetDescription { get; set; }
 
-    public DateOnly CreationDate { get; set; }
+    public DateTime CreationDate { get; set; }
 
-    public DateOnly ExpirationDate { get; set; }
+    public DateTime ExpirationDate { get; set; }
 
-    public DateOnly LastModified { get; set; }
+    public DateTime LastModified { get; set; }
 
     public virtual Member Member { get; set; } = null!;
 }
