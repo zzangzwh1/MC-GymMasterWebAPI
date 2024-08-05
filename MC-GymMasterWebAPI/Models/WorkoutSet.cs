@@ -13,6 +13,7 @@ public partial class WorkoutSet
 
     public int? SetCount { get; set; }
     public int? RepCount { get; set; }
+    public int? Weight { get; set; }
 
     public string? SetDescription { get; set; }
 

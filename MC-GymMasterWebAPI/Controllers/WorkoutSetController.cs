@@ -32,6 +32,7 @@ namespace MC_GymMasterWebAPI.Controllers
                 MemberId = workout.MemberId,
                 Part = workout.Part,
                 RepCount = workout.RepCount,
+                Weight = workout.Weight,
                 SetDescription = workout.SetDescription,
                 SetCount = workout.SetCount,
             };
