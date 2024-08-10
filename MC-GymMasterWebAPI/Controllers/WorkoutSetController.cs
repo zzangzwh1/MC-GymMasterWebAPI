@@ -18,7 +18,7 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpPost("WorkoutSet")]
         public async Task<ActionResult<WorkoutSetDTO>> InsertWorkoutSet([FromBody] WorkoutSetDTO workout)
         {
-            string s = "";
+           
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -50,6 +50,31 @@ namespace MC_GymMasterWebAPI.Controllers
                 // Log the exception (ex) here using your preferred logging framework
                 return StatusCode(500, "An error occurred while saving the Workout Details.");
             }
+        }
+        [HttpGet("userId")]
+        public async Task<ActionResult<List<PartCountDTO>>> GetMemberWorkoutPartCounts(string userId)
+        {
+            string s = "";
+            var partCounts = await _dbContext.Members
+                .Where(m => m.UserId == userId)
+                .Join(_dbContext.WorkoutSets,
+                      m => m.MemberId,
+                      w => w.MemberId,
+                      (m, w) => new { Member = m, WorkoutSet = w })
+                .GroupBy(joined => joined.WorkoutSet.Part)
+                .Select(group => new PartCountDTO
+                {
+                    Part = group.Key,
+                    TotalCount = group.Count()
+                })
+                .ToListAsync();
+
+            if (partCounts.Any())
+            {
+                return Ok(partCounts);
+            }
+
+            return NotFound();
         }
 
     }
