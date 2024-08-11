@@ -54,28 +54,85 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpGet("userId")]
         public async Task<ActionResult<List<PartCountDTO>>> GetMemberWorkoutPartCounts(string userId)
         {
-            string s = "";
-            var partCounts = await _dbContext.Members
-                .Where(m => m.UserId == userId)
-                .Join(_dbContext.WorkoutSets,
-                      m => m.MemberId,
-                      w => w.MemberId,
-                      (m, w) => new { Member = m, WorkoutSet = w })
-                .GroupBy(joined => joined.WorkoutSet.Part)
-                .Select(group => new PartCountDTO
-                {
-                    Part = group.Key,
-                    TotalCount = group.Count()
-                })
-                .ToListAsync();
-
-            if (partCounts.Any())
+            try
             {
-                return Ok(partCounts);
-            }
+                var partCounts = await _dbContext.Members
+                    .Where(m => m.UserId == userId)
+                    .Join(
+                        _dbContext.WorkoutSets,
+                        m => m.MemberId,
+                        w => w.MemberId,
+                        (m, w) => new { Member = m, WorkoutSet = w }
+                    )
+                    .GroupBy(joined => joined.WorkoutSet.Part)
+                    .Select(group => new PartCountDTO
+                    {
+                        Part = group.Key,
+                        TotalCount = group.Count()
+                    })
+                    .ToListAsync();
 
-            return NotFound();
+                if (partCounts.Any())
+                {
+                    return Ok(partCounts);
+                }
+
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (you can use any logging mechanism here)
+                // For example: _logger.LogError(ex, "Error occurred while fetching workout part counts.");
+
+                // Return a generic error response
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
         }
+        [HttpGet("id")]
+        public async Task<ActionResult<List<YearCountDTO>>> GetAnnualWorkoutStatus(string id)
+        {
+            string s = "";
+            try
+            {
+                var result = await _dbContext.WorkoutSets
+                    .Join(
+                        _dbContext.Members,
+                        w => w.MemberId,
+                        m => m.MemberId,
+                        (w, m) => new { w.CreationDate, m.UserId }
+                    )
+                    .Where(wm => wm.UserId == id)
+                    .GroupBy(wm => new
+                    {
+                        Month = wm.CreationDate.Month,
+                        Year = wm.CreationDate.Year
+                    })
+                    .Select(g => new YearCountDTO
+                    {
+                        Year = g.Key.Month, // Corrected from g.Key.Month to g.Key.Year
+                        YearCount = g.Count()
+                    })
+                    .OrderBy(r => r.Year)
+                    .ThenBy(r => r.YearCount)
+                    .ToListAsync();
+
+                if (result.Any())
+                {
+                    return Ok(result);
+                }
+
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (replace with your logging mechanism)
+                // For example: _logger.LogError(ex, "Error occurred while fetching annual workout data.");
+
+                // Return a generic error response
+                return StatusCode(500, "An error occurred while processing your request.");
+            }
+        }
+     
 
     }
 }
