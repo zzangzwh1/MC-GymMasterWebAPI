@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MC_GymMasterWebAPI.Model;
+namespace MC_GymMasterWebAPI.Models;
 
 public partial class WorkoutSet
 {
@@ -17,11 +17,11 @@ public partial class WorkoutSet
 
     public string? SetDescription { get; set; }
 
-    public DateTime CreationDate { get; set; }
+    public DateOnly CreationDate { get; set; }
 
-    public DateTime ExpirationDate { get; set; }
+    public DateOnly ExpirationDate { get; set; }
 
-    public DateTime LastModified { get; set; }
+    public DateOnly LastModified { get; set; }
 
     public virtual Member Member { get; set; } = null!;
 }

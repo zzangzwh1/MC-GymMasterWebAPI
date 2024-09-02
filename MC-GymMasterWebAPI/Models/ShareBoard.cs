@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MC_GymMasterWebAPI.Model;
+namespace MC_GymMasterWebAPI.Models;
 
 public partial class ShareBoard
 {
@@ -13,8 +13,6 @@ public partial class ShareBoard
 
     public int? LikeImage { get; set; }
 
-    public string? Comment { get; set; }
-
     public DateOnly CreationDate { get; set; }
 
     public DateOnly ExpirationDate { get; set; }
@@ -22,4 +20,6 @@ public partial class ShareBoard
     public DateOnly LastModified { get; set; }
 
     public virtual Member Member { get; set; } = null!;
+
+    public virtual ICollection<ShareBoardComment> ShareBoardComments { get; set; } = new List<ShareBoardComment>();
 }

@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MC_GymMasterWebAPI.Model;
+namespace MC_GymMasterWebAPI.Models;
 
 public partial class Member
 {
     public int MemberId { get; set; }
 
     public string UserId { get; set; } = null!;
-    public string Password { get; set; } = null;
 
-    public char Sex { get; set; }
+    public string Password { get; set; } = null!;
+
+    public string Sex { get; set; } = null!;
 
     public string FirstName { get; set; } = null!;
 
     public string LastName { get; set; } = null!;
 
-    public DateTime? BirthDate { get; set; }
+    public DateOnly? BirthDate { get; set; }
 
     public string? Address { get; set; }
 
@@ -24,9 +25,9 @@ public partial class Member
 
     public string? Phone { get; set; }
 
-    public DateTime CreationDate { get; set; }
+    public DateOnly CreationDate { get; set; }
 
-    public DateTime ExpirationDate { get; set; }
+    public DateOnly ExpirationDate { get; set; }
 
     public virtual ICollection<Chat> Chats { get; set; } = new List<Chat>();
 

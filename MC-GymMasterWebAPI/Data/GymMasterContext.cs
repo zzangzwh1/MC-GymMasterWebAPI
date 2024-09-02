@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using MC_GymMasterWebAPI.Model;
+using MC_GymMasterWebAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace MC_GymMasterWebAPI.Data;
@@ -24,16 +24,16 @@ public partial class GymMasterContext : DbContext
 
     public virtual DbSet<ShareBoard> ShareBoards { get; set; }
 
+    public virtual DbSet<ShareBoardComment> ShareBoardComments { get; set; }
+
     public virtual DbSet<WorkoutSet> WorkoutSets { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Server=(localDB)\\MSSQLLocalDB;Database=GymMaster;Trusted_Connection=True; TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Chat>(entity =>
         {
-            entity.HasKey(e => e.ChatId).HasName("PK__Chat__A9FBE7C6BC8A14C9");
+            entity.HasKey(e => e.ChatId).HasName("PK__Chat__A9FBE7C6D5AF42AB");
 
             entity.ToTable("Chat");
 
@@ -45,7 +45,7 @@ public partial class GymMasterContext : DbContext
 
         modelBuilder.Entity<Member>(entity =>
         {
-            entity.HasKey(e => e.MemberId).HasName("PK__Member__0CF04B187936CA49");
+            entity.HasKey(e => e.MemberId).HasName("PK__Member__0CF04B18D19BFC9A");
 
             entity.ToTable("Member");
 
@@ -53,9 +53,11 @@ public partial class GymMasterContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("address");
             entity.Property(e => e.Email).HasMaxLength(50);
-            entity.Property(e => e.Password).HasMaxLength(50);
             entity.Property(e => e.FirstName).HasMaxLength(50);
             entity.Property(e => e.LastName).HasMaxLength(50);
+            entity.Property(e => e.Password)
+                .HasMaxLength(50)
+                .HasColumnName("password");
             entity.Property(e => e.Phone).HasMaxLength(20);
             entity.Property(e => e.Sex)
                 .HasMaxLength(1)
@@ -68,7 +70,7 @@ public partial class GymMasterContext : DbContext
 
         modelBuilder.Entity<MemberConnection>(entity =>
         {
-            entity.HasKey(e => e.MemberConnectionId).HasName("PK__MemberCo__807A9DF605D3176D");
+            entity.HasKey(e => e.MemberConnectionId).HasName("PK__MemberCo__807A9DF68E0F28DD");
 
             entity.ToTable("MemberConnection");
 
@@ -83,7 +85,7 @@ public partial class GymMasterContext : DbContext
 
         modelBuilder.Entity<ShareBoard>(entity =>
         {
-            entity.HasKey(e => e.ShareBoardId).HasName("PK__ShareBoa__C0C706601EDDD30A");
+            entity.HasKey(e => e.ShareBoardId).HasName("PK__ShareBoa__C0C706600FA1CD0F");
 
             entity.ToTable("ShareBoard");
 
@@ -95,14 +97,30 @@ public partial class GymMasterContext : DbContext
                 .HasConstraintName("FK_ShareBoard_Member");
         });
 
+        modelBuilder.Entity<ShareBoardComment>(entity =>
+        {
+            entity.HasKey(e => e.ShareBoardCommentId).HasName("PK__ShareBoa__A3D1CEA3DC794993");
+
+            entity.ToTable("ShareBoardComment");
+
+            entity.Property(e => e.ShareBoardCommentId).ValueGeneratedNever();
+            entity.Property(e => e.Comment).HasColumnName("comment");
+
+            entity.HasOne(d => d.ShareBoard).WithMany(p => p.ShareBoardComments)
+                .HasForeignKey(d => d.ShareBoardId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ShareBoardComment_ShareBoard");
+        });
+
         modelBuilder.Entity<WorkoutSet>(entity =>
         {
-            entity.HasKey(e => e.WorkoutSetId).HasName("PK__WorkoutS__A55C57242A79CCA4");
+            entity.HasKey(e => e.WorkoutSetId).HasName("PK__WorkoutS__A55C5724FD7CF770");
 
             entity.ToTable("WorkoutSet");
 
-            entity.Property(e => e.Part).HasMaxLength(20);
+            entity.Property(e => e.Part).HasMaxLength(50);
             entity.Property(e => e.SetDescription).HasMaxLength(100);
+            entity.Property(e => e.Weight).HasColumnName("weight");
 
             entity.HasOne(d => d.Member).WithMany(p => p.WorkoutSets)
                 .HasForeignKey(d => d.MemberId)

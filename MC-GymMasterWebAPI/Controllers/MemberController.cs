@@ -1,6 +1,6 @@
 ﻿using MC_GymMasterWebAPI.Data;
 using MC_GymMasterWebAPI.DTOs;
-using MC_GymMasterWebAPI.Model;
+using MC_GymMasterWebAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -74,8 +74,8 @@ namespace MC_GymMasterWebAPI.Controllers
                 BirthDate = memberDto.BirthDate,
                 Email = memberDto.Email,
                 Password = memberDto.Password,                
-                CreationDate = DateTime.Now,
-                ExpirationDate = DateTime.Parse("2099-12-31"),
+                CreationDate = DateOnly.FromDateTime(DateTime.Now),
+                ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31")),
                 FirstName = memberDto.FirstName,
                 LastName = memberDto.LastName,
                 Phone = memberDto.Phone,

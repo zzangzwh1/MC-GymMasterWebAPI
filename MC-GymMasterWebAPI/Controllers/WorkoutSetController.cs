@@ -1,6 +1,7 @@
 ﻿using MC_GymMasterWebAPI.Data;
 using MC_GymMasterWebAPI.DTOs;
-using MC_GymMasterWebAPI.Model;
+
+using MC_GymMasterWebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,8 +28,8 @@ namespace MC_GymMasterWebAPI.Controllers
             var work = new WorkoutSet
             {
                 CreationDate = workout.CreationDate,
-                ExpirationDate = DateTime.Parse("2999-12-31"),
-                LastModified = DateTime.Now,
+                ExpirationDate = DateOnly.Parse("2999-12-31"),
+                LastModified = DateOnly.FromDateTime(DateTime.Now),
                 MemberId = workout.MemberId,
                 Part = workout.Part,
                 RepCount = workout.RepCount,

@@ -13,10 +13,10 @@
 
         public string? SetDescription { get; set; }
 
-        public DateTime CreationDate { get; set; }
+        public DateOnly CreationDate { get; set; }
 
-        public DateTime ExpirationDate { get; set; }
+        public DateOnly ExpirationDate { get; set; }
 
-        public DateTime LastModified { get; set; }
+        public DateOnly LastModified { get; set; }
     }
 }

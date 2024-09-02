@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MC_GymMasterWebAPI.Model;
+namespace MC_GymMasterWebAPI.Models;
 
 public partial class MemberConnection
 {
