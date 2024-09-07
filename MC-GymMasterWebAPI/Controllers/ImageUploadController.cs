@@ -19,27 +19,36 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpPost("upload")]
         public async Task<IActionResult> UploadImage([FromForm] IFormFile image, [FromForm] int memberId)
         {
-            string s = "";
-            if (image == null || image.Length == 0)
+     
+            if (image == null || image.Length == 0 || memberId <=0)
                 return BadRequest("No file uploaded.");
 
-            using var memoryStream = new MemoryStream();
-            await image.CopyToAsync(memoryStream);
-            var imageBytes = memoryStream.ToArray();
-
-            var shareBoard = new Models.ShareBoard
+            try
             {
-                MemberId = memberId,
-                ProfileImage = imageBytes,
-                CreationDate = DateOnly.FromDateTime(DateTime.Now),
-                LastModified = DateOnly.FromDateTime(DateTime.Now),
-                ExpirationDate = DateOnly.FromDateTime(DateTime.Now.AddDays(30)) // Example expiration
-            };
+                using var memoryStream = new MemoryStream();
+                await image.CopyToAsync(memoryStream);
+                var imageBytes = memoryStream.ToArray();
 
-            _dbContext.ShareBoards.Add(shareBoard);
-            await _dbContext.SaveChangesAsync();
+                var shareBoard = new Models.ShareBoard
+                {
+                    MemberId = memberId,
+                    ProfileImage = imageBytes,
+                    LikeImage = 0,
+                    CreationDate = DateOnly.FromDateTime(DateTime.Now),
+                    LastModified = DateOnly.FromDateTime(DateTime.Now),
+                    ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31")) // Example expiration
+                };
 
-            return Ok("Image uploaded successfully.");
+                _dbContext.ShareBoards.Add(shareBoard);
+                await _dbContext.SaveChangesAsync();
+
+                return Ok("Image uploaded successfully.");
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (use a logger if available)
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
     }

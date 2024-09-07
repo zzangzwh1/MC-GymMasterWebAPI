@@ -89,7 +89,7 @@ public partial class GymMasterContext : DbContext
 
             entity.ToTable("ShareBoard");
 
-            entity.Property(e => e.ShareBoardId).ValueGeneratedNever();
+            entity.Property(e => e.ShareBoardId).ValueGeneratedOnAdd();
 
             entity.HasOne(d => d.Member).WithMany(p => p.ShareBoards)
                 .HasForeignKey(d => d.MemberId)
