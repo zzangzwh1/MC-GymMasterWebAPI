@@ -19,7 +19,7 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpPost("WorkoutSet")]
         public async Task<ActionResult<WorkoutSetDTO>> InsertWorkoutSet([FromBody] WorkoutSetDTO workout)
         {
-           
+            string s = "";
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -38,20 +38,35 @@ namespace MC_GymMasterWebAPI.Controllers
                 SetCount = workout.SetCount,
             };
 
-
-      
             try
             {
                 _dbContext.WorkoutSets.Add(work);
                 await _dbContext.SaveChangesAsync();
-                return Ok(work);
+
+                // Assuming you need to return the saved DTO.
+                return Ok(new WorkoutSetDTO
+                {
+                    CreationDate = work.CreationDate,
+                    ExpirationDate = work.ExpirationDate,
+                    LastModified = work.LastModified,
+                    MemberId = work.MemberId,
+                    Part = work.Part,
+                    RepCount = work.RepCount,
+                    Weight = work.Weight,
+                    SetDescription = work.SetDescription,
+                    SetCount = work.SetCount,
+                });
             }
             catch (Exception ex)
             {
                 // Log the exception (ex) here using your preferred logging framework
+                // For example:
+                // _logger.LogError(ex, "An error occurred while saving the Workout Details.");
+
                 return StatusCode(500, "An error occurred while saving the Workout Details.");
             }
         }
+
         [HttpGet("userId")]
         public async Task<ActionResult<List<PartCountDTO>>> GetMemberWorkoutPartCounts(string userId)
         {
