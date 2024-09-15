@@ -16,7 +16,11 @@ public partial class GymMasterContext : DbContext
     {
     }
 
+    public virtual DbSet<BoardComment> BoardComments { get; set; }
+
     public virtual DbSet<Chat> Chats { get; set; }
+
+    public virtual DbSet<ImageLike> ImageLikes { get; set; }
 
     public virtual DbSet<Member> Members { get; set; }
 
@@ -24,13 +28,27 @@ public partial class GymMasterContext : DbContext
 
     public virtual DbSet<ShareBoard> ShareBoards { get; set; }
 
-    public virtual DbSet<ShareBoardComment> ShareBoardComments { get; set; }
-
     public virtual DbSet<WorkoutSet> WorkoutSets { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        => optionsBuilder.UseSqlServer("Name=ConnectionStrings:GymConnection");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<BoardComment>(entity =>
+        {
+            entity.HasKey(e => e.BoardCommentId).HasName("PK__BoardCom__D2B2E296B02DA4BA");
+
+            entity.ToTable("BoardComment");
+
+            entity.Property(e => e.Comment).HasColumnName("comment");
+
+            entity.HasOne(d => d.ShareBoard).WithMany(p => p.BoardComments)
+                .HasForeignKey(d => d.ShareBoardId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BoardComment_ShareBoard");
+        });
+
         modelBuilder.Entity<Chat>(entity =>
         {
             entity.HasKey(e => e.ChatId).HasName("PK__Chat__A9FBE7C6D5AF42AB");
@@ -41,6 +59,20 @@ public partial class GymMasterContext : DbContext
                 .HasForeignKey(d => d.MemberId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Chat_Member");
+        });
+
+        modelBuilder.Entity<ImageLike>(entity =>
+        {
+            entity.HasKey(e => e.LikeImageId).HasName("PK__ImageLik__BD64871AC63DDBC0");
+
+            entity.ToTable("ImageLike");
+
+            entity.Property(e => e.ImageLike1).HasColumnName("ImageLike");
+
+            entity.HasOne(d => d.ShareBoard).WithMany(p => p.ImageLikes)
+                .HasForeignKey(d => d.ShareBoardId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ImageLike_ShareBoard");
         });
 
         modelBuilder.Entity<Member>(entity =>
@@ -85,31 +117,14 @@ public partial class GymMasterContext : DbContext
 
         modelBuilder.Entity<ShareBoard>(entity =>
         {
-            entity.HasKey(e => e.ShareBoardId).HasName("PK__ShareBoa__C0C706600FA1CD0F");
+            entity.HasKey(e => e.ShareBoardId).HasName("PK__ShareBoa__C0C70660D413E94B");
 
             entity.ToTable("ShareBoard");
-
-            entity.Property(e => e.ShareBoardId).ValueGeneratedOnAdd();
 
             entity.HasOne(d => d.Member).WithMany(p => p.ShareBoards)
                 .HasForeignKey(d => d.MemberId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ShareBoard_Member");
-        });
-
-        modelBuilder.Entity<ShareBoardComment>(entity =>
-        {
-            entity.HasKey(e => e.ShareBoardCommentId).HasName("PK__ShareBoa__A3D1CEA3DC794993");
-
-            entity.ToTable("ShareBoardComment");
-
-            entity.Property(e => e.ShareBoardCommentId).ValueGeneratedNever();
-            entity.Property(e => e.Comment).HasColumnName("comment");
-
-            entity.HasOne(d => d.ShareBoard).WithMany(p => p.ShareBoardComments)
-                .HasForeignKey(d => d.ShareBoardId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ShareBoardComment_ShareBoard");
         });
 
         modelBuilder.Entity<WorkoutSet>(entity =>

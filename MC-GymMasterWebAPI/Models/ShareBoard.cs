@@ -11,15 +11,15 @@ public partial class ShareBoard
 
     public byte[]? ProfileImage { get; set; }
 
-    public int? LikeImage { get; set; }
-
     public DateOnly CreationDate { get; set; }
 
     public DateOnly ExpirationDate { get; set; }
 
     public DateOnly LastModified { get; set; }
 
-    public virtual Member Member { get; set; } = null!;
+    public virtual ICollection<BoardComment> BoardComments { get; set; } = new List<BoardComment>();
 
-    public virtual ICollection<ShareBoardComment> ShareBoardComments { get; set; } = new List<ShareBoardComment>();
+    public virtual ICollection<ImageLike> ImageLikes { get; set; } = new List<ImageLike>();
+
+    public virtual Member Member { get; set; } = null!;
 }

@@ -20,6 +20,7 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<ShareBoard>> GetEveryMemberImage()
         {
+            string s = "";
 
             var memberImages = await _dbContext.ShareBoards
                                         .Where(m => m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
@@ -27,8 +28,7 @@ namespace MC_GymMasterWebAPI.Controllers
                                         {
                                             ShareBoardId = m.ShareBoardId,
                                             MemberId = m.MemberId,
-                                            ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,
-                                            LikeImage = m.LikeImage,
+                                            ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,                                           
                                             CreationDate = m.CreationDate,
                                             ExpirationDate = m.ExpirationDate,
                                             LastModified = m.LastModified
@@ -55,8 +55,7 @@ namespace MC_GymMasterWebAPI.Controllers
                                        {
                                            ShareBoardId = m.ShareBoardId,
                                            MemberId = m.MemberId,
-                                           ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,
-                                           LikeImage = m.LikeImage,
+                                           ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,                                          
                                            CreationDate = m.CreationDate,
                                            ExpirationDate = m.ExpirationDate,
                                            LastModified = m.LastModified
@@ -88,8 +87,7 @@ namespace MC_GymMasterWebAPI.Controllers
                 var shareBoard = new Models.ShareBoard
                 {
                     MemberId = memberId,
-                    ProfileImage = imageBytes,
-                    LikeImage = 0,
+                    ProfileImage = imageBytes,                   
                     CreationDate = DateOnly.FromDateTime(DateTime.Now),
                     LastModified = DateOnly.FromDateTime(DateTime.Now),
                     ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31")) // Example expiration
