@@ -22,9 +22,7 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpPost("insertWorkout")]
         public async Task<IActionResult> InsertWorkout([FromBody] List<WorkoutSetDTO> insertWorkout)
         {
-            string s = "";
-            Console.WriteLine($"Received workout data: {JsonSerializer.Serialize(insertWorkout)}");
-
+           
        
             if (insertWorkout == null || insertWorkout.Count == 0)
             {
@@ -46,7 +44,7 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpGet("userId")]
         public async Task<ActionResult<List<PartCountDTO>>> GetMemberWorkoutPartCounts(string userId)
         {
-            string s = "";
+          
             try
             {
                 var partCounts = await _gymMasterService.GetMemberWorkoutPartCountsAsync(userId);
@@ -68,7 +66,7 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpGet("id")]
         public async Task<ActionResult<List<YearCountDTO>>> GetAnnualWorkoutStatus(string id)
         {
-            string s = "";
+            
             try
             {
                 var result = await _gymMasterService.GetAnnualWorkoutStatusAsync(id);

@@ -21,43 +21,49 @@ namespace MC_GymMasterWebAPI.Repository
             _dbContext = dbContext;
         }
 
+        #region WorkoutSet
         public async Task<List<PartCountDTO>> GetMemberWorkoutPartCountsAsync(string userId)
         {
-            return await _dbContext.Members
-                .Where(m => m.UserId == userId)
-                .Join(
-                    _dbContext.WorkoutSets,
-                    m => m.MemberId,
-                    w => w.MemberId,
-                    (m, w) => new { m, w.Part }
-                )
-                .GroupBy(g => g.Part)
-                .Select(g => new PartCountDTO
-                {
-                    Part = g.Key,
-                    TotalCount = g.Count()
-                })
-                .ToListAsync();
+            var partCounts = await _dbContext.Members
+                   .Where(m => m.UserId == userId)
+                   .Join(_dbContext.WorkoutSets,
+                         m => m.MemberId,
+                         w => w.MemberId,
+                         (m, w) => new { Member = m, WorkoutSet = w })
+                   .GroupBy(joined => joined.WorkoutSet.Part)
+                   .Select(group => new PartCountDTO
+                   {
+                       Part = group.Key,
+                       TotalCount = group.Count()
+                   })
+                   .ToListAsync();
+            return partCounts;
         }
 
-        public async Task<List<YearCountDTO>> GetAnnualWorkoutStatusAsync(string userId)
+        public async Task<List<YearCountDTO>> GetAnnualWorkoutStatusAsync(string id)
         {
-            return await _dbContext.WorkoutSets
-                .Join(
-                    _dbContext.Members,
-                    w => w.MemberId,
-                    m => m.MemberId,
-                    (w, m) => new { w.CreationDate, m.UserId }
-                )
-                .Where(wm => wm.UserId == userId)
-                .GroupBy(wm => new { wm.CreationDate.Year })
-                .Select(g => new YearCountDTO
-                {
-                    Year = g.Key.Year,
-                    YearCount = g.Count()
-                })
-                .OrderBy(r => r.Year)
-                .ToListAsync();
+            var result = await _dbContext.WorkoutSets
+                    .Join(
+                        _dbContext.Members,
+                        w => w.MemberId,
+                        m => m.MemberId,
+                        (w, m) => new { w.CreationDate, m.UserId }
+                    )
+                    .Where(wm => wm.UserId == id)
+                    .GroupBy(wm => new
+                    {
+                        Month = wm.CreationDate.Month,
+                        Year = wm.CreationDate.Year
+                    })
+                    .Select(g => new YearCountDTO
+                    {
+                        Year = g.Key.Month, // Corrected from g.Key.Month to g.Key.Year
+                        YearCount = g.Count()
+                    })
+                    .OrderBy(r => r.Year)
+                    .ThenBy(r => r.YearCount)
+                    .ToListAsync();
+            return result;
         }
 
         public async Task<List<WorkoutSetDTO>> InsertWorkoutAsync(List<WorkoutSetDTO> insertWorkout)
@@ -121,7 +127,9 @@ namespace MC_GymMasterWebAPI.Repository
 
             return savedWorkouts;
         }
+        #endregion
 
+        #region Member
         public async Task<IEnumerable<Member>> GetAllMembers()
         {
             return await _dbContext.Members.ToListAsync();
@@ -186,9 +194,10 @@ namespace MC_GymMasterWebAPI.Repository
             // Return the user (null if not found)
             return user;
         }
+        #endregion
 
-    
 
+        #region Image
         public async Task<List<ShareBoardImages>> GetMemberImage(int memberId)
         {
             return await _dbContext.ShareBoards
@@ -258,5 +267,6 @@ namespace MC_GymMasterWebAPI.Repository
 
             return memberImages;
         }
+        #endregion
     }
 }

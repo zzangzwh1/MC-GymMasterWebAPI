@@ -8,10 +8,8 @@ namespace MC_GymMasterWebAPI.Interface
     {
         #region Workout
         Task<List<WorkoutSetDTO>> InsertWorkoutAsync(List<WorkoutSetDTO> insertWorkout);
-
         Task<List<PartCountDTO>> GetMemberWorkoutPartCountsAsync(string userId);
-
-        Task<List<YearCountDTO>> GetAnnualWorkoutStatusAsync(string userId);
+        Task<List<YearCountDTO>> GetAnnualWorkoutStatusAsync(string id);
 
         #endregion
         #region Member
