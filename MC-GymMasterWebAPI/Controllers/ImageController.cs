@@ -1,4 +1,5 @@
 ﻿using MC_GymMasterWebAPI.Data;
+using MC_GymMasterWebAPI.Interface;
 using MC_GymMasterWebAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,26 +13,17 @@ namespace MC_GymMasterWebAPI.Controllers
     [ApiController]
     public class ImageController : ControllerBase
     {
-        private readonly GymMasterContext _dbContext;
-        public ImageController(GymMasterContext dbContext)
+        private readonly IGymMasterService _gymMasterService;
+
+        public ImageController(IGymMasterService gymMasterService)
         {
-            _dbContext = dbContext;
+            _gymMasterService = gymMasterService;
         }
+
         [HttpGet]
         public async Task<ActionResult<ShareBoard>> GetEveryMemberImage()
-        {            
-            var memberImages = await _dbContext.ShareBoards
-                                        .Where(m => m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
-                                        .Select(m => new ShareBoardImages
-                                        {
-                                            ShareBoardId = m.ShareBoardId,
-                                            MemberId = m.MemberId,
-                                            ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,                                           
-                                            CreationDate = m.CreationDate,
-                                            ExpirationDate = m.ExpirationDate,
-                                            LastModified = m.LastModified
-                                        }).OrderByDescending(m => m.CreationDate)
-                                        .ToListAsync();
+        {
+            var memberImages = await _gymMasterService.GetEveryMemberImage();
 
             if (memberImages != null && memberImages.Any())
             {
@@ -46,19 +38,8 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpGet("memberId")]
         public async Task<ActionResult<List<ShareBoardImages>>> GetMemberImage(int memberId)
         {
-          
-            var memberImages = await _dbContext.ShareBoards
-                                       .Where (m=> m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now) && m.MemberId == memberId)
-                                       .Select(m => new ShareBoardImages
-                                       {
-                                           ShareBoardId = m.ShareBoardId,
-                                           MemberId = m.MemberId,
-                                           ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,                                          
-                                           CreationDate = m.CreationDate,
-                                           ExpirationDate = m.ExpirationDate,
-                                           LastModified = m.LastModified
-                                       }).OrderByDescending(m=>m.CreationDate)
-                                       .ToListAsync();
+
+            var memberImages = await _gymMasterService.GetMemberImage(memberId);
 
             if (memberImages != null && memberImages.Any())
             {
@@ -78,22 +59,7 @@ namespace MC_GymMasterWebAPI.Controllers
 
             try
             {
-                using var memoryStream = new MemoryStream();
-                await image.CopyToAsync(memoryStream);
-                var imageBytes = memoryStream.ToArray();
-
-                var shareBoard = new Models.ShareBoard
-                {
-                    MemberId = memberId,
-                    ProfileImage = imageBytes,                   
-                    CreationDate = DateOnly.FromDateTime(DateTime.Now),
-                    LastModified = DateOnly.FromDateTime(DateTime.Now),
-                    ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31")) // Example expiration
-                };
-
-                _dbContext.ShareBoards.Add(shareBoard);
-                await _dbContext.SaveChangesAsync();
-
+                await _gymMasterService.UploadImage(image, memberId);
                 return Ok("Image uploaded successfully.");
             }
             catch (Exception ex)

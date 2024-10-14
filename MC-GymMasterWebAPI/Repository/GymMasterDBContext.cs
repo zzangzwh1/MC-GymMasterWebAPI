@@ -187,6 +187,76 @@ namespace MC_GymMasterWebAPI.Repository
             return user;
         }
 
-     
+    
+
+        public async Task<List<ShareBoardImages>> GetMemberImage(int memberId)
+        {
+            return await _dbContext.ShareBoards
+                             .Where(m => m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now) && m.MemberId == memberId)
+                             .Select(m => new ShareBoardImages
+                             {
+                                 ShareBoardId = m.ShareBoardId,
+                                 MemberId = m.MemberId,
+                                 ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,
+                                 CreationDate = m.CreationDate,
+                                 ExpirationDate = m.ExpirationDate,
+                                 LastModified = m.LastModified
+                             }).OrderByDescending(m => m.CreationDate)
+                             .ToListAsync();
+        }
+
+        public async Task UploadImage(IFormFile image, int memberId)
+        {
+            if (image == null || image.Length == 0 || memberId <= 0)
+                throw new ArgumentException("Invalid image or member ID.");
+
+            try
+            {
+                using var memoryStream = new MemoryStream();
+                await image.CopyToAsync(memoryStream);
+                var imageBytes = memoryStream.ToArray();
+
+                var shareBoard = new ShareBoard
+                {
+                    MemberId = memberId,
+                    ProfileImage = imageBytes,
+                    CreationDate = DateOnly.FromDateTime(DateTime.Now),
+                    LastModified = DateOnly.FromDateTime(DateTime.Now),
+                    ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31")) // Example expiration
+                };
+
+                _dbContext.ShareBoards.Add(shareBoard);
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions that occur during the upload process
+                throw new InvalidOperationException($"Error occurred while uploading image: {ex.Message}", ex);
+            }
+        }
+
+        public async Task UploadImageLike(ImageLike like)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<ShareBoardImages>> GetEveryMemberImage()
+        {
+            var memberImages = await _dbContext.ShareBoards
+                .Where(m => m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                .Select(m => new ShareBoardImages
+                {
+                    ShareBoardId = m.ShareBoardId,
+                    MemberId = m.MemberId,
+                    ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,
+                    CreationDate = m.CreationDate,
+                    ExpirationDate = m.ExpirationDate,
+                    LastModified = m.LastModified
+                })
+                .OrderByDescending(m => m.CreationDate)
+                .ToListAsync();
+
+            return memberImages;
+        }
     }
 }
