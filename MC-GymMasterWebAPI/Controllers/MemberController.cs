@@ -1,5 +1,6 @@
 ﻿using MC_GymMasterWebAPI.Data;
 using MC_GymMasterWebAPI.DTOs;
+using MC_GymMasterWebAPI.Interface;
 using MC_GymMasterWebAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,29 +13,30 @@ namespace MC_GymMasterWebAPI.Controllers
     [ApiController]
     public class MemberController : ControllerBase
     {
-        private readonly GymMasterContext _dbContext;
-        public MemberController(GymMasterContext dbContext)
+        private readonly IGymMasterService _gymMasterService;
+
+        public MemberController(IGymMasterService gymMasterService)
         {
-            _dbContext = dbContext;
+            _gymMasterService = gymMasterService;
         }
+    
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Member>>> GetAllMembers()
         {
-            var members = await (from m in _dbContext.Members
-                                 select m).ToListAsync();
-            if (members.Any())
+         
+            var members = await _gymMasterService.GetAllMembers();
+            if (members == null || !members.Any() )
             {
-                return Ok(members);
+                return NotFound(); // Return 404 if no members found
             }
 
-            return NotFound();
+            return Ok(members);
         }
         [HttpGet("userId")]
         public async Task<ActionResult<Member>> GetMemberByUsername(string userId)
         {
-            var member = await _dbContext.Members
-                                         .Where(m => m.UserId == userId)
-                                         .FirstOrDefaultAsync();
+           
+            var member = await _gymMasterService.GetMemberByUsername(userId);
 
             if (member != null)
             {
@@ -46,9 +48,8 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpGet("memberId")]
         public async Task<ActionResult<Member>> GetMemberIdByUserId(string memberId)
         {
-            var member = await _dbContext.Members
-                                         .Where(m => m.UserId == memberId)
-                                         .FirstOrDefaultAsync();
+           
+            var member = await _gymMasterService.GetMemberIdByUserId(memberId);
 
             if (member != null)
             {
@@ -61,35 +62,27 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<MemberDTO>> InsertMember([FromBody] MemberDTO memberDto)
         {
-            
+       
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var member = new Member
-            {
-                UserId = memberDto.UserId,
-                Address = memberDto.Address,
-                BirthDate = memberDto.BirthDate,
-                Email = memberDto.Email,
-                Password = memberDto.Password,                
-                CreationDate = DateOnly.FromDateTime(DateTime.Now),
-                ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31")),
-                FirstName = memberDto.FirstName,
-                LastName = memberDto.LastName,
-                Phone = memberDto.Phone,
-                Sex = memberDto.Sex
-            };
             try
             {
-                _dbContext.Members.Add(member);
-                await _dbContext.SaveChangesAsync();
-                return Ok(member);
+                // Use the service to insert the member
+                var newMember = await _gymMasterService.InsertMember(memberDto);
+
+                if (newMember == null)
+                {
+                    return StatusCode(500, "An error occurred while saving the member.");
+                }
+
+                return CreatedAtAction(nameof(GetMemberByUsername), new { userId = newMember.UserId }, newMember);
             }
             catch (Exception ex)
             {
-                // Log the exception (ex) here using your preferred logging framework
+                // Log the exception (ex) using a logger
                 return StatusCode(500, "An error occurred while saving the member.");
             }
         }
@@ -97,27 +90,24 @@ namespace MC_GymMasterWebAPI.Controllers
     
         public async Task<IActionResult> Authenticate([FromBody] LoginDto loginInfo)
         {
-            var user = await _dbContext.Members
-                .FirstOrDefaultAsync(u => u.UserId == loginInfo.UserId);
+         
+            // Call the service's Authenticate method
+            var user = await _gymMasterService.Authenticate(loginInfo);
 
+            // Check if user exists
             if (user == null)
             {
                 return Unauthorized(new { success = false, message = "Invalid UserId" });
             }
 
+            // Check password
             if (user.Password != loginInfo.Password)
             {
                 return Unauthorized(new { success = false, message = "Invalid Password" });
             }
 
-            // Assuming you generate and set a JWT token here
+            // Assuming JWT token generation here (commented out)
             // var token = GenerateJwtToken(user);
-            // Response.Cookies.Append("AuthToken", token, new CookieOptions
-            // {
-            //     HttpOnly = true,
-            //     Secure = true, // Ensure this is true in production for HTTPS
-            //     SameSite = SameSiteMode.Strict // Adjust based on your needs
-            // });
 
             return Ok(new { success = true, message = "Authentication successful" });
         }

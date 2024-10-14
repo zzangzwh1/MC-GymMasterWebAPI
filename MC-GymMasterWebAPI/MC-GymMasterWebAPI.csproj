@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <Folder Include="MC_GymMasterWebAPI\" />
-    <Folder Include="TechService\" />
   </ItemGroup>
 
 </Project>

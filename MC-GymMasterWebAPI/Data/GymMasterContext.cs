@@ -67,7 +67,7 @@ public partial class GymMasterContext : DbContext
 
             entity.ToTable("ImageLike");
 
-            entity.Property(e => e.ImageLike1).HasColumnName("ImageLike");
+            entity.Property(e => e.Like).HasColumnName("ImageLike");
 
             entity.HasOne(d => d.ShareBoard).WithMany(p => p.ImageLikes)
                 .HasForeignKey(d => d.ShareBoardId)

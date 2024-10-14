@@ -1,92 +1,55 @@
 ﻿using MC_GymMasterWebAPI.Data;
 using MC_GymMasterWebAPI.DTOs;
-
+using MC_GymMasterWebAPI.Interface;
 using MC_GymMasterWebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace MC_GymMasterWebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WorkoutSetController : Controller
+    public class WorkoutSetController : ControllerBase
     {
-        private readonly GymMasterContext _dbContext;
-        public WorkoutSetController(GymMasterContext dbContext)
+        private readonly IGymMasterService _gymMasterService;
+
+        public WorkoutSetController(IGymMasterService gymMasterService)
         {
-            _dbContext = dbContext;
+            _gymMasterService = gymMasterService;
         }
-        [HttpPost("WorkoutSet")]
-        public async Task<ActionResult<WorkoutSetDTO>> InsertWorkoutSet([FromBody] WorkoutSetDTO workout)
+
+        [HttpPost("insertWorkout")]
+        public async Task<IActionResult> InsertWorkout([FromBody] List<WorkoutSetDTO> insertWorkout)
         {
             string s = "";
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            Console.WriteLine($"Received workout data: {JsonSerializer.Serialize(insertWorkout)}");
 
-            var work = new WorkoutSet
+       
+            if (insertWorkout == null || insertWorkout.Count == 0)
             {
-                CreationDate = workout.CreationDate,
-                ExpirationDate = DateOnly.Parse("2999-12-31"),
-                LastModified = DateOnly.FromDateTime(DateTime.Now),
-                MemberId = workout.MemberId,
-                Part = workout.Part,
-                RepCount = workout.RepCount,
-                Weight = workout.Weight,
-                SetDescription = workout.SetDescription,
-                SetCount = workout.SetCount,
-            };
+                return BadRequest("Invalid workout data.");
+            }
 
             try
             {
-                _dbContext.WorkoutSets.Add(work);
-                await _dbContext.SaveChangesAsync();
-
-                // Assuming you need to return the saved DTO.
-                return Ok(new WorkoutSetDTO
-                {
-                    CreationDate = work.CreationDate,
-                    ExpirationDate = work.ExpirationDate,
-                    LastModified = work.LastModified,
-                    MemberId = work.MemberId,
-                    Part = work.Part,
-                    RepCount = work.RepCount,
-                    Weight = work.Weight,
-                    SetDescription = work.SetDescription,
-                    SetCount = work.SetCount,
-                });
+                var savedWorkouts = await _gymMasterService.InsertWorkoutAsync(insertWorkout);
+                return Ok(savedWorkouts);
             }
             catch (Exception ex)
             {
-                // Log the exception (ex) here using your preferred logging framework
-                // For example:
-                // _logger.LogError(ex, "An error occurred while saving the Workout Details.");
-
-                return StatusCode(500, "An error occurred while saving the Workout Details.");
+              
+                return StatusCode(500, "An error occurred while saving the workout details.");
             }
         }
 
         [HttpGet("userId")]
         public async Task<ActionResult<List<PartCountDTO>>> GetMemberWorkoutPartCounts(string userId)
         {
+            string s = "";
             try
             {
-                var partCounts = await _dbContext.Members
-                    .Where(m => m.UserId == userId)
-                    .Join(
-                        _dbContext.WorkoutSets,
-                        m => m.MemberId,
-                        w => w.MemberId,
-                        (m, w) => new { Member = m, WorkoutSet = w }
-                    )
-                    .GroupBy(joined => joined.WorkoutSet.Part)
-                    .Select(group => new PartCountDTO
-                    {
-                        Part = group.Key,
-                        TotalCount = group.Count()
-                    })
-                    .ToListAsync();
+                var partCounts = await _gymMasterService.GetMemberWorkoutPartCountsAsync(userId);
 
                 if (partCounts.Any())
                 {
@@ -97,40 +60,18 @@ namespace MC_GymMasterWebAPI.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception (you can use any logging mechanism here)
-                // For example: _logger.LogError(ex, "Error occurred while fetching workout part counts.");
-
-                // Return a generic error response
+              
                 return StatusCode(500, "An error occurred while processing your request.");
             }
         }
+
         [HttpGet("id")]
         public async Task<ActionResult<List<YearCountDTO>>> GetAnnualWorkoutStatus(string id)
         {
             string s = "";
             try
             {
-                var result = await _dbContext.WorkoutSets
-                    .Join(
-                        _dbContext.Members,
-                        w => w.MemberId,
-                        m => m.MemberId,
-                        (w, m) => new { w.CreationDate, m.UserId }
-                    )
-                    .Where(wm => wm.UserId == id)
-                    .GroupBy(wm => new
-                    {
-                        Month = wm.CreationDate.Month,
-                        Year = wm.CreationDate.Year
-                    })
-                    .Select(g => new YearCountDTO
-                    {
-                        Year = g.Key.Month, // Corrected from g.Key.Month to g.Key.Year
-                        YearCount = g.Count()
-                    })
-                    .OrderBy(r => r.Year)
-                    .ThenBy(r => r.YearCount)
-                    .ToListAsync();
+                var result = await _gymMasterService.GetAnnualWorkoutStatusAsync(id);
 
                 if (result.Any())
                 {
@@ -141,14 +82,9 @@ namespace MC_GymMasterWebAPI.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception (replace with your logging mechanism)
-                // For example: _logger.LogError(ex, "Error occurred while fetching annual workout data.");
-
-                // Return a generic error response
+             
                 return StatusCode(500, "An error occurred while processing your request.");
             }
         }
-     
-
     }
 }

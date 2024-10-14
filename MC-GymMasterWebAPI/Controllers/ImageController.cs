@@ -19,9 +19,7 @@ namespace MC_GymMasterWebAPI.Controllers
         }
         [HttpGet]
         public async Task<ActionResult<ShareBoard>> GetEveryMemberImage()
-        {
-            string s = "";
-
+        {            
             var memberImages = await _dbContext.ShareBoards
                                         .Where(m => m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
                                         .Select(m => new ShareBoardImages
@@ -103,6 +101,15 @@ namespace MC_GymMasterWebAPI.Controllers
                 // Log the exception (use a logger if available)
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
+        }
+        [HttpPost]
+        public async Task<ActionResult> UploadImageLike(ImageLike like)
+        {
+            string s = "";
+            if (like == null)
+                return BadRequest("No Image Like");
+
+            return null;
         }
 
     }

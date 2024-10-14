@@ -11,7 +11,7 @@ public partial class ImageLike
 
     public int MemberId { get; set; }
 
-    public int ImageLike1 { get; set; }
+    public int Like { get; set; }
 
     public DateOnly CreationgDate { get; set; }
 

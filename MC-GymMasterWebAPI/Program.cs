@@ -1,10 +1,18 @@
 using MC_GymMasterWebAPI.Data;
+using MC_GymMasterWebAPI.DTOs;
+using MC_GymMasterWebAPI.Interface;
+using MC_GymMasterWebAPI.Repository;
 using Microsoft.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+    });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -13,7 +21,7 @@ builder.Services.AddSwaggerGen();
 // Configure DbContext with SQL Server
 builder.Services.AddDbContext<GymMasterContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("GymConnection")));
-
+builder.Services.AddScoped<IGymMasterService, GymMasterDBContext>();
 // Configure CORS to allow requests from the Angular app
 builder.Services.AddCors(options =>
 {
@@ -38,8 +46,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Use the configured CORS policy
-app.UseCors("AllowAll");
+/*// Use the configured CORS policy
+app.UseCors("AllowAll");*/
+app.UseCors("AllowAll"); 
 
 // Authentication and Authorization middlewares
 app.UseAuthentication(); // Ensure you have authentication services configured if you use this
