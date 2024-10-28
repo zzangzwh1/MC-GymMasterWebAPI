@@ -141,11 +141,11 @@ namespace MC_GymMasterWebAPI.Repository
                                          .FirstOrDefaultAsync();
         }
 
-        public async  Task<Member> GetMemberIdByUserId(string memberId)
+        public async Task<Member> GetMemberIdByUserId(string memberId)
         {
-           return  await _dbContext.Members
-                                         .Where(m => m.UserId == memberId)
-                                         .FirstOrDefaultAsync();
+            return await _dbContext.Members
+                                          .Where(m => m.UserId == memberId)
+                                          .FirstOrDefaultAsync();
         }
 
         public async Task<MemberDTO> InsertMember(MemberDTO memberDto)
@@ -244,10 +244,54 @@ namespace MC_GymMasterWebAPI.Repository
             }
         }
 
-        public async Task UploadImageLike(ImageLike like)
+        public async Task UploadImageLike(ImageLikeDTO like)
         {
-            throw new NotImplementedException();
+            var existingImageLike = await _dbContext.ImageLikes
+                                     .FirstOrDefaultAsync(i => i.MemberId == like.MemberId                                 
+                                   && i.ShareBoardId == like.ShareBoardId);
+            string s = "";
+
+            if (existingImageLike != null)
+            {
+                if (like.ImageLike == 0)
+                {
+                    existingImageLike.CreationgDate = DateOnly.FromDateTime(DateTime.Now);
+                    existingImageLike.ExpirationDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-1));
+                    existingImageLike.LastModifiedDate = DateOnly.FromDateTime(DateTime.Now);
+                    existingImageLike.Like = 0;
+
+                    // Save changes to the database
+                    await _dbContext.SaveChangesAsync();
+                }
+                else
+                {
+                    existingImageLike.CreationgDate = DateOnly.FromDateTime(DateTime.Now);
+                    existingImageLike.ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31"));
+                    existingImageLike.LastModifiedDate = DateOnly.FromDateTime(DateTime.Now);
+                    existingImageLike.Like = 1;
+
+                    // Save changes to the database
+                    await _dbContext.SaveChangesAsync();
+
+                }
+            }
+            else
+            {
+                var likeImage = new ImageLike
+                {
+                    ShareBoardId = like.ShareBoardId,
+                    MemberId = like.MemberId,
+                    CreationgDate = DateOnly.FromDateTime(DateTime.Now),
+                    ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31")),
+                    LastModifiedDate = DateOnly.FromDateTime(DateTime.Now),
+                    Like = 1
+
+                };
+                _dbContext.ImageLikes.Add(likeImage);
+                await _dbContext.SaveChangesAsync();
+            }
         }
+
 
         public async Task<List<ShareBoardImages>> GetEveryMemberImage()
         {

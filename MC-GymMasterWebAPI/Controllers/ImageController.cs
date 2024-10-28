@@ -1,9 +1,11 @@
 ﻿using MC_GymMasterWebAPI.Data;
+using MC_GymMasterWebAPI.DTOs;
 using MC_GymMasterWebAPI.Interface;
 using MC_GymMasterWebAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static System.Net.Mime.MediaTypeNames;
 
 
 
@@ -68,14 +70,23 @@ namespace MC_GymMasterWebAPI.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-        [HttpPost]
-        public async Task<ActionResult> UploadImageLike(ImageLike like)
+        [HttpPost("uploadImageLike")]
+        public async Task<IActionResult> UploadImageLike(ImageLikeDTO like)
         {
             string s = "";
             if (like == null)
-                return BadRequest("No Image Like");
+                return BadRequest(new { message = "No Image Like" });
 
-            return null;
+            try
+            {
+                await _gymMasterService.UploadImageLike(like);
+                return Ok(new { message = "Image Like successfully added." }); // Return as JSON object
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (use a logger if available)
+                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
+            }
         }
 
     }
