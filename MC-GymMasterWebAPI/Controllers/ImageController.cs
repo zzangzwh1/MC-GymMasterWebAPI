@@ -50,7 +50,15 @@ namespace MC_GymMasterWebAPI.Controllers
 
             return NotFound();
         }
+        [HttpGet("member")]
+        public async Task<ActionResult<List<ImageLikeDTO>>> GetLikedImage(int member)
+        {
+            var memberLikedImages = await _gymMasterService.GetLikedImage(member);
+           if(memberLikedImages.Any())
+                return Ok(memberLikedImages);
 
+            return NotFound();
+        }
 
         [HttpPost("upload")]
         public async Task<IActionResult> UploadImage([FromForm] IFormFile image, [FromForm] int memberId)
@@ -88,6 +96,6 @@ namespace MC_GymMasterWebAPI.Controllers
                 return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
             }
         }
-
+  
     }
 }

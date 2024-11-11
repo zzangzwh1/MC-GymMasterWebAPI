@@ -213,6 +213,17 @@ namespace MC_GymMasterWebAPI.Repository
                              }).OrderByDescending(m => m.CreationDate)
                              .ToListAsync();
         }
+        public async Task<List<ImageLikeDTO>> GetLikedImage(int member)
+        {
+            return await _dbContext.ImageLikes.Where(i => i.MemberId == member && i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                    .Select(i => new ImageLikeDTO
+                    {
+                        MemberId = i.MemberId,
+                        ShareBoardId = i.ShareBoardId,
+                        ImageLike = i.Like
+
+                    }).ToListAsync();
+        }
 
         public async Task UploadImage(IFormFile image, int memberId)
         {
@@ -247,9 +258,8 @@ namespace MC_GymMasterWebAPI.Repository
         public async Task UploadImageLike(ImageLikeDTO like)
         {
             var existingImageLike = await _dbContext.ImageLikes
-                                     .FirstOrDefaultAsync(i => i.MemberId == like.MemberId                                 
-                                   && i.ShareBoardId == like.ShareBoardId);
-            string s = "";
+                                     .FirstOrDefaultAsync(i => i.MemberId == like.MemberId
+                                   && i.ShareBoardId == like.ShareBoardId);           
 
             if (existingImageLike != null)
             {
