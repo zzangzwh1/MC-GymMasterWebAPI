@@ -27,7 +27,11 @@ namespace MC_GymMasterWebAPI.Interface
         Task UploadImage(IFormFile image, int memberId);
         Task<List<ImageLikeDTO>> GetLikedImage(int member);
         Task UploadImageLike(ImageLikeDTO like);
-    
+
+        #endregion
+
+        #region BoardComment
+        Task<BoardComment> AddComment(BoardCommentDTO comments);
         #endregion
     }
 }

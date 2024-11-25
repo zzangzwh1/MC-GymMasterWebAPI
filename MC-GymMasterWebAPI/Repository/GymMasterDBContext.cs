@@ -259,7 +259,7 @@ namespace MC_GymMasterWebAPI.Repository
         {
             var existingImageLike = await _dbContext.ImageLikes
                                      .FirstOrDefaultAsync(i => i.MemberId == like.MemberId
-                                   && i.ShareBoardId == like.ShareBoardId);           
+                                   && i.ShareBoardId == like.ShareBoardId);
 
             if (existingImageLike != null)
             {
@@ -320,6 +320,35 @@ namespace MC_GymMasterWebAPI.Repository
                 .ToListAsync();
 
             return memberImages;
+        }
+        #endregion
+
+        #region BoardComment
+        public async Task<BoardComment> AddComment(BoardCommentDTO comments)
+        {
+            var boardComment = new BoardComment
+            {
+                Comment = comments.Comment,
+                CreationgDate = DateOnly.FromDateTime(DateTime.Now),
+                ExpirationDate = DateOnly.FromDateTime(new DateTime(2099, 12, 31)), // Explicit and clear date
+                LastModifiedDate = DateOnly.FromDateTime(DateTime.Now),
+                MemberId = comments.MemberId,
+                ShareBoardId = comments.ShareBoardId
+            };
+
+            try
+            {
+                // Add the comment to the database
+                _dbContext.BoardComments.Add(boardComment);
+                await _dbContext.SaveChangesAsync();       
+                return boardComment;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (replace with your logging framework if applicable)
+                // _logger.LogError(ex, "Failed to add a comment.");
+                throw new InvalidOperationException("An error occurred while adding the comment.", ex);
+            }
         }
         #endregion
     }
