@@ -40,6 +40,17 @@ namespace MC_GymMasterWebAPI.Controllers
                 return StatusCode(500, new { message = "An error occurred while adding the comment.", error = ex.Message });
             }
         }
+        [HttpGet("GetComments")]
+        public async Task<ActionResult<IList<BoardComment>>> GetComments()
+        {
+            string s = "";
+            var comments = await _gymMasterService.GetComments();
+            if (comments != null)
+                return Ok(comments);
+
+            return NotFound();
+
+        }
 
     }
 }

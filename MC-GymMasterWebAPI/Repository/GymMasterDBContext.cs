@@ -330,7 +330,7 @@ namespace MC_GymMasterWebAPI.Repository
             {
                 Comment = comments.Comment,
                 CreationgDate = DateOnly.FromDateTime(DateTime.Now),
-                ExpirationDate = DateOnly.FromDateTime(new DateTime(2099, 12, 31)), // Explicit and clear date
+                ExpirationDate = DateOnly.FromDateTime(new DateTime(2099, 12, 31)),
                 LastModifiedDate = DateOnly.FromDateTime(DateTime.Now),
                 MemberId = comments.MemberId,
                 ShareBoardId = comments.ShareBoardId
@@ -340,7 +340,7 @@ namespace MC_GymMasterWebAPI.Repository
             {
                 // Add the comment to the database
                 _dbContext.BoardComments.Add(boardComment);
-                await _dbContext.SaveChangesAsync();       
+                await _dbContext.SaveChangesAsync();
                 return boardComment;
             }
             catch (Exception ex)
@@ -349,6 +349,14 @@ namespace MC_GymMasterWebAPI.Repository
                 // _logger.LogError(ex, "Failed to add a comment.");
                 throw new InvalidOperationException("An error occurred while adding the comment.", ex);
             }
+        }
+        public async Task<IList<BoardComment>> GetComments()
+        {
+
+            return await _dbContext.BoardComments
+                .Where(i=> i.ExpirationDate >= DateOnly.FromDateTime(DateTime.Now))
+                .ToListAsync() ?? null;
+
         }
         #endregion
     }
