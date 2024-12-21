@@ -345,18 +345,31 @@ namespace MC_GymMasterWebAPI.Repository
             }
             catch (Exception ex)
             {
-                // Log the exception (replace with your logging framework if applicable)
-                // _logger.LogError(ex, "Failed to add a comment.");
                 throw new InvalidOperationException("An error occurred while adding the comment.", ex);
             }
         }
-        public async Task<IList<BoardComment>> GetComments()
+        public async Task<IList<MemberAndCommentInfoDTO>> GetComments()
         {
-
-            return await _dbContext.BoardComments
-                .Where(i=> i.ExpirationDate >= DateOnly.FromDateTime(DateTime.Now))
-                .ToListAsync() ?? null;
-
+            var result = from m in _dbContext.Members
+                         join b in _dbContext.BoardComments
+                         on m.MemberId equals b.MemberId
+                         where b.ExpirationDate >= DateOnly.FromDateTime(DateTime.Now)
+                         orderby b.CreationgDate descending
+                         select new MemberAndCommentInfoDTO
+                         {
+                             MemberId = m.MemberId,
+                             Address = m.Address,                             
+                             Email = m.Email,
+                             FirstName = m.FirstName,
+                             LastName = m.LastName,
+                             Phone = m.Phone,
+                             UserId = m.UserId,
+                             ShareBoardId = b.ShareBoardId,
+                             Comment = b.Comment,
+                         };
+            return await result.ToListAsync() ?? null; 
+                         
+         
         }
         #endregion
     }

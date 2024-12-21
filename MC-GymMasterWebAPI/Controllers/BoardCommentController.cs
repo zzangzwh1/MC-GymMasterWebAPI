@@ -41,10 +41,10 @@ namespace MC_GymMasterWebAPI.Controllers
             }
         }
         [HttpGet("GetComments")]
-        public async Task<ActionResult<IList<BoardComment>>> GetComments()
+        public async Task<ActionResult<IList<MemberAndCommentInfoDTO>>> GetComments()
         {
-            string s = "";
             var comments = await _gymMasterService.GetComments();
+            string s = "";
             if (comments != null)
                 return Ok(comments);
 

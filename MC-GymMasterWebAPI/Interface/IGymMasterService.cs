@@ -32,7 +32,7 @@ namespace MC_GymMasterWebAPI.Interface
 
         #region BoardComment
         Task<BoardComment> AddComment(BoardCommentDTO comments);
-        Task<IList<BoardComment>> GetComments();
+        Task<IList<MemberAndCommentInfoDTO>> GetComments();
         #endregion
     }
 }
