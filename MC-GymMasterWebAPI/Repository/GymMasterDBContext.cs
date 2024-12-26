@@ -137,17 +137,13 @@ namespace MC_GymMasterWebAPI.Repository
 
         public async Task<Member> GetMemberByUsername(string userId)
         {
-            return await _dbContext.Members.Where(m => m.UserId == userId)
-                                         .FirstOrDefaultAsync();
+            return await _dbContext.Members.Where(m => m.UserId == userId).FirstOrDefaultAsync();
         }
 
         public async Task<Member> GetMemberIdByUserId(string memberId)
         {
-            return await _dbContext.Members
-                                          .Where(m => m.UserId == memberId)
-                                          .FirstOrDefaultAsync();
+            return await _dbContext.Members.Where(m => m.UserId == memberId).FirstOrDefaultAsync();
         }
-
         public async Task<MemberDTO> InsertMember(MemberDTO memberDto)
         {
             var member = new Member
@@ -187,12 +183,7 @@ namespace MC_GymMasterWebAPI.Repository
 
         public async Task<Member> Authenticate(LoginDto loginInfo)
         {
-            // Find user by UserId
-            var user = await _dbContext.Members
-                .FirstOrDefaultAsync(u => u.UserId == loginInfo.UserId);
-
-            // Return the user (null if not found)
-            return user;
+            return await _dbContext.Members.FirstOrDefaultAsync(u => u.UserId == loginInfo.UserId);
         }
         #endregion
 
@@ -221,8 +212,20 @@ namespace MC_GymMasterWebAPI.Repository
                         MemberId = i.MemberId,
                         ShareBoardId = i.ShareBoardId,
                         ImageLike = i.Like
-
                     }).ToListAsync();
+        }
+        public async Task<ShareBoard> DeleteImage(int shareBoardId)
+        {
+            var deleteImage = await _dbContext.ShareBoards
+                                .FirstOrDefaultAsync(i => i.ShareBoardId == shareBoardId);
+            if (deleteImage != null)
+            {
+                deleteImage.ExpirationDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-1));
+                await _dbContext.SaveChangesAsync();
+                return deleteImage; 
+            }
+
+            return null; 
         }
 
         public async Task UploadImage(IFormFile image, int memberId)
@@ -358,7 +361,7 @@ namespace MC_GymMasterWebAPI.Repository
                          select new MemberAndCommentInfoDTO
                          {
                              MemberId = m.MemberId,
-                             Address = m.Address,                             
+                             Address = m.Address,
                              Email = m.Email,
                              FirstName = m.FirstName,
                              LastName = m.LastName,
@@ -367,9 +370,9 @@ namespace MC_GymMasterWebAPI.Repository
                              ShareBoardId = b.ShareBoardId,
                              Comment = b.Comment,
                          };
-            return await result.ToListAsync() ?? null; 
-                         
-         
+            return await result.ToListAsync() ?? null;
+
+
         }
         #endregion
     }

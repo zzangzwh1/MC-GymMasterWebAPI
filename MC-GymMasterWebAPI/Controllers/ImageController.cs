@@ -59,6 +59,19 @@ namespace MC_GymMasterWebAPI.Controllers
 
             return NotFound();
         }
+        [HttpDelete("Delete")]
+        public async Task<ActionResult<ShareBoard>> DeleteImage(int shareBoardId)
+        {
+            string s = "";
+            var deleteImage = await _gymMasterService.DeleteImage(shareBoardId);
+
+            if (deleteImage != null)
+            {
+                return Ok(deleteImage); 
+            }
+
+            return NotFound(); 
+        }
 
         [HttpPost("upload")]
         public async Task<IActionResult> UploadImage([FromForm] IFormFile image, [FromForm] int memberId)
