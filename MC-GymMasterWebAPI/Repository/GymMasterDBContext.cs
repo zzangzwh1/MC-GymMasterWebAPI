@@ -18,7 +18,7 @@ namespace MC_GymMasterWebAPI.Repository
 
         public GymMasterDBContext(GymMasterContext dbContext)
         {
-            _dbContext = dbContext; 
+            _dbContext = dbContext;  
         }
 
         #region WorkoutSet
