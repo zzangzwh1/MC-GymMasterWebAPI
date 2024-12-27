@@ -14,7 +14,7 @@ namespace MC_GymMasterWebAPI.Interface
         #endregion
         #region Member
         Task<IEnumerable<Member>> GetAllMembers();
-        Task<Member> GetMemberByUsername(string userId);
+        Task<MemberDTO> GetMemberByUsername(string userId);
         Task<Member> GetMemberIdByUserId(string memberId);
         Task<MemberDTO> InsertMember(MemberDTO memberDto);
         Task<Member> Authenticate(LoginDto loginInfo);

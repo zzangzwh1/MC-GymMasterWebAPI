@@ -33,7 +33,7 @@ namespace MC_GymMasterWebAPI.Controllers
             return Ok(members);
         }
         [HttpGet("userId")]
-        public async Task<ActionResult<Member>> GetMemberByUsername(string userId)
+        public async Task<ActionResult<MemberDTO>> GetMemberByUsername(string userId)
         {
            
             var member = await _gymMasterService.GetMemberByUsername(userId);
