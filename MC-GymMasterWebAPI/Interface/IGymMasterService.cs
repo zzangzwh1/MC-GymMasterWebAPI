@@ -18,6 +18,7 @@ namespace MC_GymMasterWebAPI.Interface
         Task<Member> GetMemberIdByUserId(string memberId);
         Task<MemberDTO> InsertMember(MemberDTO memberDto);
         Task<Member> Authenticate(LoginDto loginInfo);
+        Task<Member> UpdateUserInfo(MemberDTO member);
 
         #endregion
 

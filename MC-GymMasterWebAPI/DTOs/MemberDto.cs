@@ -23,7 +23,7 @@
         public DateOnly CreationDate { get; set; }
 
         public DateOnly ExpirationDate { get; set; }
-
+        public DateOnly LastModifiedDate { get; set; }
 
 
     }

@@ -94,7 +94,7 @@ public partial class GymMasterContext : DbContext
             entity.Property(e => e.Sex)
                 .HasMaxLength(1)
                 .IsUnicode(false)
-                .IsFixedLength();
+                .IsFixedLength();            
             entity.Property(e => e.UserId)
                 .HasMaxLength(50)
                 .HasColumnName("UserID");

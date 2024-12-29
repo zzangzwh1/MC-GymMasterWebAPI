@@ -154,6 +154,7 @@ namespace MC_GymMasterWebAPI.Repository
                         Email = i.Email,
                         FirstName = i.FirstName,
                         ExpirationDate = i.ExpirationDate,
+                        LastModifiedDate = i.LastModifiedDate,
                         LastName = i.LastName,
                         Password = i.Password,
                         Phone = i.Phone,
@@ -167,6 +168,29 @@ namespace MC_GymMasterWebAPI.Repository
 
                 return null;
             }
+        }
+        public async Task<Member> UpdateUserInfo(MemberDTO member)
+        {
+          
+            var existingMember = await _dbContext.Members.FirstOrDefaultAsync(m => m.UserId == member.UserId);
+
+            if (existingMember == null)
+            {
+                return null;
+            }
+            existingMember.Address = member.Address;
+            existingMember.BirthDate = member.BirthDate;
+            existingMember.Email = member.Email;
+            existingMember.Password = member.Password;
+            existingMember.LastModifiedDate = DateOnly.FromDateTime(DateTime.Now);
+            existingMember.FirstName = member.FirstName;
+            existingMember.LastName = member.LastName;
+            existingMember.Phone = member.Phone;
+            existingMember.Sex = member.Sex;
+
+            // Save changes to the database
+            await _dbContext.SaveChangesAsync();
+            return existingMember;
         }
 
         public async Task<Member> GetMemberIdByUserId(string memberId)

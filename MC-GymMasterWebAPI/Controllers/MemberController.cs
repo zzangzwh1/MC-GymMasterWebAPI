@@ -58,6 +58,26 @@ namespace MC_GymMasterWebAPI.Controllers
 
             return NotFound();
         }
+        [HttpPost("edit")]
+        public async Task<ActionResult<Member>> UpdateUserInfo([FromBody] MemberDTO memberDto)
+        {
+            string s = "";
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var member = await _gymMasterService.UpdateUserInfo(memberDto);
+
+            if (member != null)
+            {
+                return Ok(member); // Return the updated member
+            }
+
+            return NotFound();
+        }
+
+
 
         [HttpPost("register")]
         public async Task<ActionResult<MemberDTO>> InsertMember([FromBody] MemberDTO memberDto)
