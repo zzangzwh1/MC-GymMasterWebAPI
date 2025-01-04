@@ -1,24 +1,27 @@
-﻿
-using MC_GymMasterWebAPI.Data;
+﻿using MC_GymMasterWebAPI.Data;
 using MC_GymMasterWebAPI.DTOs;
 using MC_GymMasterWebAPI.Interface;
 using MC_GymMasterWebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Net;
+using System.Net.Mail;
+
 
 namespace MC_GymMasterWebAPI.Repository
 {
     public class GymMasterDBContext : IGymMasterService
     {
         private readonly GymMasterContext _dbContext;
-
-        public GymMasterDBContext(GymMasterContext dbContext)
+        private readonly MailSettings _mailSetting;
+        public GymMasterDBContext(GymMasterContext dbContext, IOptions<MailSettings> options)
         {
-            _dbContext = dbContext;  
+            _dbContext = dbContext;
+            _mailSetting = options.Value;
         }
 
         #region WorkoutSet
@@ -171,7 +174,7 @@ namespace MC_GymMasterWebAPI.Repository
         }
         public async Task<Member> UpdateUserInfo(MemberDTO member)
         {
-          
+
             var existingMember = await _dbContext.Members.FirstOrDefaultAsync(m => m.UserId == member.UserId);
 
             if (existingMember == null)
@@ -275,10 +278,10 @@ namespace MC_GymMasterWebAPI.Repository
             {
                 deleteImage.ExpirationDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-1));
                 await _dbContext.SaveChangesAsync();
-                return deleteImage; 
+                return deleteImage;
             }
 
-            return null; 
+            return null;
         }
 
         public async Task UploadImage(IFormFile image, int memberId)
@@ -427,6 +430,42 @@ namespace MC_GymMasterWebAPI.Repository
 
 
         }
+        #endregion
+
+        #region Email
+        //smtpemailTest1
+        public async Task<bool> SendMail(MailData email)
+        {
+            try
+            {
+                var smtpClient = new SmtpClient(_mailSetting.Host)
+                {
+                    Port = _mailSetting.Port,
+                    Credentials = new NetworkCredential(_mailSetting.UserName, _mailSetting.Password),
+                    EnableSsl = true,
+                };
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress(_mailSetting.UserName, "GYM-Master"),
+                    Subject = email.EmailSubject,
+                    Body = email.EmailBody,
+                    IsBodyHtml = true,
+                };
+                mailMessage.To.Add(email.EmailToId);
+                await smtpClient.SendMailAsync(mailMessage);
+
+
+
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                string s = ex.Message;
+                return false;
+            }
+        }
+
         #endregion
     }
 }

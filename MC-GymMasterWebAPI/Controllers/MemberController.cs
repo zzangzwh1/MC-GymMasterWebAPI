@@ -2,10 +2,7 @@
 using MC_GymMasterWebAPI.DTOs;
 using MC_GymMasterWebAPI.Interface;
 using MC_GymMasterWebAPI.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace MC_GymMasterWebAPI.Controllers
 {
@@ -19,11 +16,11 @@ namespace MC_GymMasterWebAPI.Controllers
         {
             _gymMasterService = gymMasterService;
         }
-    
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Member>>> GetAllMembers()
         {
-         
+
             var members = await _gymMasterService.GetAllMembers();
             if (members == null || !members.Any() )
             {
@@ -35,7 +32,7 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpGet("userId")]
         public async Task<ActionResult<MemberDTO>> GetMemberByUsername(string userId)
         {
-           
+
             var member = await _gymMasterService.GetMemberByUsername(userId);
 
             if (member != null)
@@ -45,10 +42,11 @@ namespace MC_GymMasterWebAPI.Controllers
 
             return NotFound();
         }
+
         [HttpGet("memberId")]
         public async Task<ActionResult<Member>> GetMemberIdByUserId(string memberId)
         {
-           
+
             var member = await _gymMasterService.GetMemberIdByUserId(memberId);
 
             if (member != null)
@@ -82,7 +80,7 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<MemberDTO>> InsertMember([FromBody] MemberDTO memberDto)
         {
-       
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -107,10 +105,10 @@ namespace MC_GymMasterWebAPI.Controllers
             }
         }
         [HttpPost("authenticate")]
-    
+
         public async Task<IActionResult> Authenticate([FromBody] LoginDto loginInfo)
         {
-         
+
             // Call the service's Authenticate method
             var user = await _gymMasterService.Authenticate(loginInfo);
 
@@ -131,7 +129,41 @@ namespace MC_GymMasterWebAPI.Controllers
 
             return Ok(new { success = true, message = "Authentication successful" });
         }
+       
+        [HttpPost("requestPassword")]
+        public async Task<IActionResult> RequestPassword([FromBody] RequestPasswordDTO requestPassword)
+        {
+            if (requestPassword.selectedValue != "email" || string.IsNullOrEmpty(requestPassword.userId))
+            {
+                return BadRequest("Invalid input data.");
+            }
 
+            try
+            {
+                var getMember = await _gymMasterService.GetMemberByUsername(requestPassword.userId);
+
+                if (getMember == null)
+                {
+                    return NotFound("Member not found.");
+                }
+
+                var emailInfo = new MailData
+                {
+                    EmailSubject = "Gym Master - User Password",
+                    EmailBody = @$"User Password: {getMember.Password} <br> If you have any questions or concerns, feel free to email - zzangzwh1@gmail.com.<br><br> Thanks,<br> Gym Master Support Team",
+                    EmailToId = getMember.Email,
+                    EmailToName = $"{getMember.FirstName} {getMember.LastName}",
+                };
+
+                var result = _gymMasterService.SendMail(emailInfo);
+
+                return Ok(new { Message = "Email sent successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while processing your request: {ex.Message}");
+            }
+        }
 
 
     }

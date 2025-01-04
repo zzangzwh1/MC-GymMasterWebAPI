@@ -36,5 +36,10 @@ namespace MC_GymMasterWebAPI.Interface
         Task<BoardComment> AddComment(BoardCommentDTO comments);
         Task<IList<MemberAndCommentInfoDTO>> GetComments();
         #endregion
+
+        #region Email
+        Task<bool> SendMail(MailData Mail_Data);
+
+        #endregion
     }
 }
