@@ -30,6 +30,8 @@ namespace MC_GymMasterWebAPI.Interface
         Task<string> UploadImageLike(ImageLikeDTO like);
         Task<ShareBoard> DeleteImage(int shareBoardId);
 
+        Task<List<ImageLikeCountDTO>> GetLikedImage();
+
         #endregion
 
         #region BoardComment

@@ -270,6 +270,20 @@ namespace MC_GymMasterWebAPI.Repository
                           UserId = i.UserId
                       }).ToListAsync();
           }
+        public async Task<List<ImageLikeCountDTO>> GetLikedImage()
+        {
+            var likedImageCounts = await _dbContext.ImageLikes
+                .Where(i => i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now)) 
+                .GroupBy(i => i.ShareBoardId) 
+                .Select(group => new ImageLikeCountDTO
+                {
+                    ShareBoardId = group.Key,
+                    TotalCount = group.Count() 
+                })
+                .ToListAsync();
+
+            return likedImageCounts;
+        }
         public async Task<ShareBoard> DeleteImage(int shareBoardId)
         {
             var deleteImage = await _dbContext.ShareBoards

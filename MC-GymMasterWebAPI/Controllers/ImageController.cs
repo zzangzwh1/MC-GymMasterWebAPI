@@ -1,9 +1,11 @@
 ﻿using MC_GymMasterWebAPI.Data;
 using MC_GymMasterWebAPI.DTOs;
+using MC_GymMasterWebAPI.HubConfig;
 using MC_GymMasterWebAPI.Interface;
 using MC_GymMasterWebAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -16,10 +18,13 @@ namespace MC_GymMasterWebAPI.Controllers
     public class ImageController : ControllerBase
     {
         private readonly IGymMasterService _gymMasterService;
+        private readonly IHubContext<SHub> _hubContext;
 
-        public ImageController(IGymMasterService gymMasterService)
+
+        public ImageController(IGymMasterService gymMasterService, IHubContext<SHub> hubContext)
         {
             _gymMasterService = gymMasterService;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -35,6 +40,22 @@ namespace MC_GymMasterWebAPI.Controllers
             return NotFound();
 
 
+        }
+        [HttpGet("likeCount")]
+        public async Task<IActionResult> GetImageLikeCount()
+        {
+            var imageCounts = await _gymMasterService.GetLikedImage();
+
+            if (imageCounts == null)
+            {
+                return NotFound("Image not found");
+            }         
+
+         
+            await _hubContext.Clients.All.SendAsync("ReceiveLikeCountUpdate", imageCounts);
+
+            string s = "";
+            return Ok(imageCounts);
         }
 
         [HttpGet("memberId")]

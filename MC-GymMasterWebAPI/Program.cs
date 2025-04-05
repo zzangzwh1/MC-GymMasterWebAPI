@@ -1,6 +1,7 @@
 using MC_GymMasterWebAPI.Controllers;
 using MC_GymMasterWebAPI.Data;
 using MC_GymMasterWebAPI.DTOs;
+using MC_GymMasterWebAPI.HubConfig;
 using MC_GymMasterWebAPI.Interface;
 using MC_GymMasterWebAPI.Models;
 using MC_GymMasterWebAPI.Repository;
@@ -35,6 +36,7 @@ builder.Services.AddSwaggerGen(c =>
     }); ;
 
 });
+builder.Services.AddSignalR();
 
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 // Configure DbContext with SQL Server
@@ -72,7 +74,7 @@ app.UseCors("AllowAll");
 // Authentication and Authorization middlewares
 app.UseAuthentication(); // Ensure you have authentication services configured if you use this
 app.UseAuthorization();
-
+app.MapHub<SHub>("/shub");
 app.MapControllers();
 
 app.Run();
