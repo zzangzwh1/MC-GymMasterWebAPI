@@ -9,11 +9,9 @@ public partial class ImageLike
 
     public int ShareBoardId { get; set; }
 
-    public int MemberId { get; set; }
+    public string UserId { get; set; } = null!;
 
-    public int Like { get; set; }
-
-    public DateOnly CreationgDate { get; set; }
+    public DateOnly CreationDate { get; set; }
 
     public DateOnly ExpirationDate { get; set; }
 

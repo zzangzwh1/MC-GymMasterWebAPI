@@ -260,16 +260,16 @@ namespace MC_GymMasterWebAPI.Repository
                              }).OrderByDescending(m => m.CreationDate)
                              .ToListAsync();
         }
-        public async Task<List<ImageLikeDTO>> GetLikedImage(int member)
-        {
-            return await _dbContext.ImageLikes.Where(i => i.MemberId == member && i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
-                    .Select(i => new ImageLikeDTO
-                    {
-                        MemberId = i.MemberId,
-                        ShareBoardId = i.ShareBoardId,
-                        ImageLike = i.Like
-                    }).ToListAsync();
-        }
+         public async Task<List<ImageLikeDTO>> GetLikedImage(string member)
+          {
+              return await _dbContext.ImageLikes.Where(i => i.UserId == member && i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                      .Select(i => new ImageLikeDTO
+                      {
+                        
+                          ShareBoardId = i.ShareBoardId,
+                          UserId = i.UserId
+                      }).ToListAsync();
+          }
         public async Task<ShareBoard> DeleteImage(int shareBoardId)
         {
             var deleteImage = await _dbContext.ShareBoards
@@ -314,51 +314,65 @@ namespace MC_GymMasterWebAPI.Repository
             }
         }
 
-        public async Task UploadImageLike(ImageLikeDTO like)
+        public async Task<string> UploadImageLike(ImageLikeDTO like)
         {
+            // Check if the ImageLike exists
             var existingImageLike = await _dbContext.ImageLikes
-                                     .FirstOrDefaultAsync(i => i.MemberId == like.MemberId
-                                   && i.ShareBoardId == like.ShareBoardId);
+                .Where(i => i.UserId == like.UserId
+                            && i.ShareBoardId == like.ShareBoardId
+                          ) 
+                .FirstOrDefaultAsync();
 
-            if (existingImageLike != null)
+            ImageLike likeImage;
+            string result = "";
+          
+            if (existingImageLike != null  )
             {
-                if (like.ImageLike == 0)
+                if(existingImageLike.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
                 {
-                    existingImageLike.CreationgDate = DateOnly.FromDateTime(DateTime.Now);
                     existingImageLike.ExpirationDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-1));
                     existingImageLike.LastModifiedDate = DateOnly.FromDateTime(DateTime.Now);
-                    existingImageLike.Like = 0;
 
-                    // Save changes to the database
-                    await _dbContext.SaveChangesAsync();
+                    likeImage = existingImageLike;
+                    result = "fail";
                 }
                 else
                 {
-                    existingImageLike.CreationgDate = DateOnly.FromDateTime(DateTime.Now);
                     existingImageLike.ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31"));
                     existingImageLike.LastModifiedDate = DateOnly.FromDateTime(DateTime.Now);
-                    existingImageLike.Like = 1;
 
-                    // Save changes to the database
-                    await _dbContext.SaveChangesAsync();
-
+                    likeImage = existingImageLike;
+                    result = "success";
                 }
+               
             }
             else
-            {
-                var likeImage = new ImageLike
+            {              
+                likeImage = new ImageLike
                 {
+                    UserId = like.UserId,
                     ShareBoardId = like.ShareBoardId,
-                    MemberId = like.MemberId,
-                    CreationgDate = DateOnly.FromDateTime(DateTime.Now),
-                    ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31")),
-                    LastModifiedDate = DateOnly.FromDateTime(DateTime.Now),
-                    Like = 1
-
+                    CreationDate = DateOnly.FromDateTime(DateTime.Now),
+                    ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31")), 
+                    LastModifiedDate = DateOnly.FromDateTime(DateTime.Now) 
                 };
+
                 _dbContext.ImageLikes.Add(likeImage);
-                await _dbContext.SaveChangesAsync();
+                result = "success";
             }
+
+            try
+            {
+             
+                await _dbContext.SaveChangesAsync();
+                return result;
+            }
+            catch (Exception ex)
+            {
+               
+                return "fail";
+            }
+
         }
 
 
@@ -436,6 +450,7 @@ namespace MC_GymMasterWebAPI.Repository
         //smtpemailTest1
         public async Task<bool> SendMail(MailData email)
         {
+
             try
             {
                 var smtpClient = new SmtpClient(_mailSetting.Host)

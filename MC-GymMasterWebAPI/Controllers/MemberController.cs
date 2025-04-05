@@ -24,7 +24,7 @@ namespace MC_GymMasterWebAPI.Controllers
             var members = await _gymMasterService.GetAllMembers();
             if (members == null || !members.Any() )
             {
-                return NotFound(); // Return 404 if no members found
+                return NotFound(); 
             }
 
             return Ok(members);
@@ -69,7 +69,7 @@ namespace MC_GymMasterWebAPI.Controllers
 
             if (member != null)
             {
-                return Ok(member); // Return the updated member
+                return Ok(member);
             }
 
             return NotFound();
@@ -88,7 +88,7 @@ namespace MC_GymMasterWebAPI.Controllers
 
             try
             {
-                // Use the service to insert the member
+             
                 var newMember = await _gymMasterService.InsertMember(memberDto);
 
                 if (newMember == null)
@@ -100,19 +100,16 @@ namespace MC_GymMasterWebAPI.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception (ex) using a logger
+              
                 return StatusCode(500, "An error occurred while saving the member.");
             }
         }
         [HttpPost("authenticate")]
-
         public async Task<IActionResult> Authenticate([FromBody] LoginDto loginInfo)
-        {
-
-            // Call the service's Authenticate method
+        {        
             var user = await _gymMasterService.Authenticate(loginInfo);
 
-            // Check if user exists
+           
             if (user == null)
             {
                 return Unauthorized(new { success = false, message = "Invalid UserId" });

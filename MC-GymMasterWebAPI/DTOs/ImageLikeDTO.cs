@@ -3,7 +3,6 @@
     public class ImageLikeDTO
     {
         public int ShareBoardId { set; get; }
-        public int MemberId { set; get; }
-        public int ImageLike { set; get; }
+        public string UserId { set; get; }       
     }
 }

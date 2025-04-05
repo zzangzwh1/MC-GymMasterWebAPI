@@ -51,9 +51,9 @@ namespace MC_GymMasterWebAPI.Controllers
             return NotFound();
         }
         [HttpGet("member")]
-        public async Task<ActionResult<List<ImageLikeDTO>>> GetLikedImage(int member)
+        public async Task<ActionResult<List<ImageLikeDTO>>> GetLikedImage(string member)
         {
-            var memberLikedImages = await _gymMasterService.GetLikedImage(member);
+           var memberLikedImages = await _gymMasterService.GetLikedImage(member);
            if(memberLikedImages.Any())
                 return Ok(memberLikedImages);
 
@@ -93,21 +93,19 @@ namespace MC_GymMasterWebAPI.Controllers
         }
         [HttpPost("uploadImageLike")]
         public async Task<IActionResult> UploadImageLike(ImageLikeDTO like)
-        {
-            string s = "";
-            if (like == null)
-                return BadRequest(new { message = "No Image Like" });
-
-            try
+        {      
+           
+            if (like.ShareBoardId >0 && !string.IsNullOrEmpty(like.UserId))
             {
-                await _gymMasterService.UploadImageLike(like);
-                return Ok(new { message = "Image Like successfully added." }); // Return as JSON object
+                var result = await _gymMasterService.UploadImageLike(like);
+                if(result == "success")
+                {
+                    return Ok(new Result{ Message = "success",IsSuccess=true });
+                }
+                return Ok(new Result { Message = "fail",IsSuccess=true});
             }
-            catch (Exception ex)
-            {
-                // Log the exception (use a logger if available)
-                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
-            }
+            return BadRequest(new Result { Message = "BAD" ,IsSuccess=false});
+           
         }
   
     }

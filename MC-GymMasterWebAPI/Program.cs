@@ -47,10 +47,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll",
         builder =>
         {
-            builder.WithOrigins("http://localhost:4200") // Update this if your Angular app is hosted on a different domain or port
+            builder.WithOrigins("http://localhost:4200") 
                    .AllowAnyMethod()
                    .AllowAnyHeader()
-                   .AllowCredentials(); // Only if you need to allow credentials (e.g., cookies)
+                   .AllowCredentials(); 
         });
 });
 

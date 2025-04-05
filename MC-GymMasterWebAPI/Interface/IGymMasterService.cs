@@ -26,8 +26,8 @@ namespace MC_GymMasterWebAPI.Interface
         Task<List<ShareBoardImages>> GetEveryMemberImage();
         Task<List<ShareBoardImages>> GetMemberImage(int memberId);
         Task UploadImage(IFormFile image, int memberId);
-        Task<List<ImageLikeDTO>> GetLikedImage(int member);
-        Task UploadImageLike(ImageLikeDTO like);
+        Task<List<ImageLikeDTO>> GetLikedImage(string member);
+        Task<string> UploadImageLike(ImageLikeDTO like);
         Task<ShareBoard> DeleteImage(int shareBoardId);
 
         #endregion

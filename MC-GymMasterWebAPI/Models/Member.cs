@@ -28,6 +28,7 @@ public partial class Member
     public DateOnly CreationDate { get; set; }
 
     public DateOnly ExpirationDate { get; set; }
+
     public DateOnly LastModifiedDate { get; set; }
 
     public virtual ICollection<Chat> Chats { get; set; } = new List<Chat>();

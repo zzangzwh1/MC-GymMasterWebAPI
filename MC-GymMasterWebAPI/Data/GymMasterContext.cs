@@ -31,7 +31,7 @@ public partial class GymMasterContext : DbContext
     public virtual DbSet<WorkoutSet> WorkoutSets { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Name=ConnectionStrings:GymConnection");
+        => optionsBuilder.UseSqlServer("Server=(localDB)\\MSSQLLocalDB;Database=GymMaster;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -63,11 +63,13 @@ public partial class GymMasterContext : DbContext
 
         modelBuilder.Entity<ImageLike>(entity =>
         {
-            entity.HasKey(e => e.LikeImageId).HasName("PK__ImageLik__BD64871AC63DDBC0");
+            entity.HasKey(e => e.LikeImageId).HasName("PK__ImageLik__BD64871AC1811921");
 
             entity.ToTable("ImageLike");
 
-            entity.Property(e => e.Like).HasColumnName("ImageLike");
+            entity.Property(e => e.UserId)
+                .HasMaxLength(50)
+                .HasColumnName("UserID");
 
             entity.HasOne(d => d.ShareBoard).WithMany(p => p.ImageLikes)
                 .HasForeignKey(d => d.ShareBoardId)
@@ -86,6 +88,7 @@ public partial class GymMasterContext : DbContext
                 .HasColumnName("address");
             entity.Property(e => e.Email).HasMaxLength(50);
             entity.Property(e => e.FirstName).HasMaxLength(50);
+            entity.Property(e => e.LastModifiedDate).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.LastName).HasMaxLength(50);
             entity.Property(e => e.Password)
                 .HasMaxLength(50)
@@ -94,7 +97,7 @@ public partial class GymMasterContext : DbContext
             entity.Property(e => e.Sex)
                 .HasMaxLength(1)
                 .IsUnicode(false)
-                .IsFixedLength();            
+                .IsFixedLength();
             entity.Property(e => e.UserId)
                 .HasMaxLength(50)
                 .HasColumnName("UserID");
