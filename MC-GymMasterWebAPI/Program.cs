@@ -42,7 +42,7 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailS
 // Configure DbContext with SQL Server
 builder.Services.AddDbContext<GymMasterContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("GymConnection")));
-builder.Services.AddScoped<IGymMasterService, GymMasterDBContext>();
+builder.Services.AddScoped<IGymMasterService, MC_GymMasterWebAPI.Repository.GymMasterDBContext>();
 // Configure CORS to allow requests from the Angular app
 builder.Services.AddCors(options =>
 {

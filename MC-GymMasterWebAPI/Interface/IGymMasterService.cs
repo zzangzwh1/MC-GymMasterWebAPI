@@ -37,6 +37,8 @@ namespace MC_GymMasterWebAPI.Interface
         #region BoardComment
         Task<BoardComment> AddComment(BoardCommentDTO comments);
         Task<IList<MemberAndCommentInfoDTO>> GetComments();
+        Task<Result> EditComment(int boardCommendId, BoardCommentDTO comment);
+        Task<Result> DeleteComment(int boardCommendId);
         #endregion
 
         #region Email

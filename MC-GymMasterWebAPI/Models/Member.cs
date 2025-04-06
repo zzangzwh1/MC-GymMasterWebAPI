@@ -31,10 +31,6 @@ public partial class Member
 
     public DateOnly LastModifiedDate { get; set; }
 
-    public virtual ICollection<Chat> Chats { get; set; } = new List<Chat>();
-
-    public virtual ICollection<MemberConnection> MemberConnections { get; set; } = new List<MemberConnection>();
-
     public virtual ICollection<ShareBoard> ShareBoards { get; set; } = new List<ShareBoard>();
 
     public virtual ICollection<WorkoutSet> WorkoutSets { get; set; } = new List<WorkoutSet>();

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
+using System.Xml.Linq;
 
 
 namespace MC_GymMasterWebAPI.Repository
@@ -163,7 +164,7 @@ namespace MC_GymMasterWebAPI.Repository
                         Phone = i.Phone,
                         Sex = i.Sex,
                         UserId = i.UserId,
-                         
+
                     })
                     .FirstOrDefaultAsync();
             }
@@ -261,25 +262,25 @@ namespace MC_GymMasterWebAPI.Repository
                              }).OrderByDescending(m => m.CreationDate)
                              .ToListAsync();
         }
-         public async Task<List<ImageLikeDTO>> GetLikedImage(string member)
-          {
-              return await _dbContext.ImageLikes.Where(i => i.UserId == member && i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
-                      .Select(i => new ImageLikeDTO
-                      {
-                        
-                          ShareBoardId = i.ShareBoardId,
-                          UserId = i.UserId
-                      }).ToListAsync();
-          }
+        public async Task<List<ImageLikeDTO>> GetLikedImage(string member)
+        {
+            return await _dbContext.ImageLikes.Where(i => i.UserId == member && i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                    .Select(i => new ImageLikeDTO
+                    {
+
+                        ShareBoardId = i.ShareBoardId,
+                        UserId = i.UserId
+                    }).ToListAsync();
+        }
         public async Task<List<ImageLikeCountDTO>> GetLikedImage()
         {
             var likedImageCounts = await _dbContext.ImageLikes
-                .Where(i => i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now)) 
-                .GroupBy(i => i.ShareBoardId) 
+                .Where(i => i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                .GroupBy(i => i.ShareBoardId)
                 .Select(group => new ImageLikeCountDTO
                 {
                     ShareBoardId = group.Key,
-                    TotalCount = group.Count() 
+                    TotalCount = group.Count()
                 })
                 .ToListAsync();
 
@@ -335,15 +336,15 @@ namespace MC_GymMasterWebAPI.Repository
             var existingImageLike = await _dbContext.ImageLikes
                 .Where(i => i.UserId == like.UserId
                             && i.ShareBoardId == like.ShareBoardId
-                          ) 
+                          )
                 .FirstOrDefaultAsync();
 
             ImageLike likeImage;
             string result = "";
-          
-            if (existingImageLike != null  )
+
+            if (existingImageLike != null)
             {
-                if(existingImageLike.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                if (existingImageLike.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
                 {
                     existingImageLike.ExpirationDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-1));
                     existingImageLike.LastModifiedDate = DateOnly.FromDateTime(DateTime.Now);
@@ -359,17 +360,17 @@ namespace MC_GymMasterWebAPI.Repository
                     likeImage = existingImageLike;
                     result = "success";
                 }
-               
+
             }
             else
-            {              
+            {
                 likeImage = new ImageLike
                 {
                     UserId = like.UserId,
                     ShareBoardId = like.ShareBoardId,
                     CreationDate = DateOnly.FromDateTime(DateTime.Now),
-                    ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31")), 
-                    LastModifiedDate = DateOnly.FromDateTime(DateTime.Now) 
+                    ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31")),
+                    LastModifiedDate = DateOnly.FromDateTime(DateTime.Now)
                 };
 
                 _dbContext.ImageLikes.Add(likeImage);
@@ -378,13 +379,13 @@ namespace MC_GymMasterWebAPI.Repository
 
             try
             {
-             
+
                 await _dbContext.SaveChangesAsync();
                 return result;
             }
             catch (Exception ex)
             {
-               
+
                 return "fail";
             }
 
@@ -413,8 +414,8 @@ namespace MC_GymMasterWebAPI.Repository
 
         #region BoardComment
         public async Task<BoardComment> AddComment(BoardCommentDTO comments)
-        {   
-            var memberId = await _dbContext.Members.Where(i => i.UserId == comments.MemberId).Select(i=>i.MemberId).FirstOrDefaultAsync();
+        {
+            var memberId = await _dbContext.Members.Where(i => i.UserId == comments.MemberId).Select(i => i.MemberId).FirstOrDefaultAsync();
             var boardComment = new BoardComment
             {
                 Comment = comments.Comment,
@@ -436,6 +437,45 @@ namespace MC_GymMasterWebAPI.Repository
             {
                 throw new InvalidOperationException("An error occurred while adding the comment.", ex);
             }
+        }
+        public async Task<Result> EditComment(int boardCommendId, BoardCommentDTO comment)
+        {
+            var boardComment = await _dbContext.BoardComments
+       .FirstOrDefaultAsync(i => i.BoardCommentId == boardCommendId);
+            if (boardComment != null)
+            {
+                boardComment.Comment = comment.Comment;
+                boardComment.LastModifiedDate = DateOnly.FromDateTime(DateTime.Now);
+                await _dbContext.SaveChangesAsync();
+
+                return new Result { IsSuccess = true, Message = "success" };
+            }
+            return new Result
+            {
+                IsSuccess = false,
+                Message = "fail"
+
+            };
+        }
+        public async Task<Result> DeleteComment(int boardCommendId) {
+
+            var boardComment = await _dbContext.BoardComments
+            .FirstOrDefaultAsync(i => i.BoardCommentId == boardCommendId);
+            if (boardComment != null)
+            {
+            
+                boardComment.LastModifiedDate = DateOnly.FromDateTime(DateTime.Now);
+                boardComment.ExpirationDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-1));
+                await _dbContext.SaveChangesAsync();
+
+                return new Result { IsSuccess = true, Message = "success" };
+            }
+            return new Result
+            {
+                IsSuccess = false,
+                Message = "fail"
+
+            };
         }
         public async Task<IList<MemberAndCommentInfoDTO>> GetComments()
         {

@@ -4,6 +4,7 @@ using MC_GymMasterWebAPI.Interface;
 using MC_GymMasterWebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 
 namespace MC_GymMasterWebAPI.Controllers
 {
@@ -43,6 +44,43 @@ namespace MC_GymMasterWebAPI.Controllers
                
                 return StatusCode(500, new { message = "An error occurred while adding the comment.", error = ex.Message });
             }
+        }
+        [HttpPut("{boardCommendId}")]
+        public async Task<IActionResult> EditComment(int boardCommendId, [FromBody] BoardCommentDTO comment)
+        {
+            string s = "";
+            if (boardCommendId <= 0)
+            {
+                return BadRequest("Mismatch between URL ID and comment ID.");
+            }
+            var updateComment = await _gymMasterService.EditComment(boardCommendId, comment);
+
+            if (updateComment.IsSuccess)
+            {
+                return Ok(updateComment);
+            }
+         
+
+            return BadRequest("BoardComment id is not exist");
+        }
+        [HttpPut("delete/{boardCommendId}")]
+        public async Task<IActionResult> DeleteComment(int boardCommendId)
+        {
+            string s = "";
+            if (boardCommendId <= 0)
+            {
+                return BadRequest("Mismatch between URL ID and comment ID.");
+            }
+            var deleteComment = await _gymMasterService.DeleteComment(boardCommendId);
+            if (deleteComment.IsSuccess)
+            {
+                return Ok(deleteComment);
+            }
+
+
+
+
+            return BadRequest("BoardComment id is not exist");
         }
         [HttpGet("GetComments")]
         public async Task<ActionResult<IList<MemberAndCommentInfoDTO>>> GetComments()

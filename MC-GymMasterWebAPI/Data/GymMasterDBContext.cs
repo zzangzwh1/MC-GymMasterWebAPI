@@ -5,32 +5,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MC_GymMasterWebAPI.Data;
 
-public partial class GymMasterContext : DbContext
+public partial class GymMasterDBContext : DbContext
 {
-    public GymMasterContext()
+    public GymMasterDBContext()
     {
     }
 
-    public GymMasterContext(DbContextOptions<GymMasterContext> options)
+    public GymMasterDBContext(DbContextOptions<GymMasterDBContext> options)
         : base(options)
     {
     }
 
     public virtual DbSet<BoardComment> BoardComments { get; set; }
 
-    public virtual DbSet<Chat> Chats { get; set; }
-
     public virtual DbSet<ImageLike> ImageLikes { get; set; }
 
     public virtual DbSet<Member> Members { get; set; }
-
-    public virtual DbSet<MemberConnection> MemberConnections { get; set; }
 
     public virtual DbSet<ShareBoard> ShareBoards { get; set; }
 
     public virtual DbSet<WorkoutSet> WorkoutSets { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=(localDB)\\MSSQLLocalDB;Database=GymMaster;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -47,18 +44,6 @@ public partial class GymMasterContext : DbContext
                 .HasForeignKey(d => d.ShareBoardId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_BoardComment_ShareBoard");
-        });
-
-        modelBuilder.Entity<Chat>(entity =>
-        {
-            entity.HasKey(e => e.ChatId).HasName("PK__Chat__A9FBE7C6D5AF42AB");
-
-            entity.ToTable("Chat");
-
-            entity.HasOne(d => d.Member).WithMany(p => p.Chats)
-                .HasForeignKey(d => d.MemberId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Chat_Member");
         });
 
         modelBuilder.Entity<ImageLike>(entity =>
@@ -101,21 +86,6 @@ public partial class GymMasterContext : DbContext
             entity.Property(e => e.UserId)
                 .HasMaxLength(50)
                 .HasColumnName("UserID");
-        });
-
-        modelBuilder.Entity<MemberConnection>(entity =>
-        {
-            entity.HasKey(e => e.MemberConnectionId).HasName("PK__MemberCo__807A9DF68E0F28DD");
-
-            entity.ToTable("MemberConnection");
-
-            entity.Property(e => e.Followers).HasMaxLength(100);
-            entity.Property(e => e.Followings).HasMaxLength(100);
-
-            entity.HasOne(d => d.Member).WithMany(p => p.MemberConnections)
-                .HasForeignKey(d => d.MemberId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_MemberConnection_Member");
         });
 
         modelBuilder.Entity<ShareBoard>(entity =>

@@ -2,6 +2,7 @@
 {
     public class BoardCommentDTO
     {       
+        public int BoardCommentId { set; get; }
         public int ShareBoardId { get; set; }
 
         public string MemberId { get; set; }
