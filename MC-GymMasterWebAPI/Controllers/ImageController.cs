@@ -52,9 +52,8 @@ namespace MC_GymMasterWebAPI.Controllers
             if (imageCounts == null)
             {
                 return NotFound("Image not found");
-            }         
+            }       
 
-         
             await _hubContext.Clients.All.SendAsync("ReceiveLikeCountUpdate", imageCounts);
 
             return Ok(imageCounts);
@@ -63,7 +62,6 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpGet("memberId")]
         public async Task<ActionResult<List<ShareBoardImages>>> GetMemberImage(int memberId)
         {
-
             var memberImages = await _gymMasterService.GetMemberImage(memberId);
 
             if (memberImages != null && memberImages.Any())
@@ -110,8 +108,7 @@ namespace MC_GymMasterWebAPI.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception (use a logger if available)
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return NotFound();
             }
         }
         [HttpPost("uploadImageLike")]

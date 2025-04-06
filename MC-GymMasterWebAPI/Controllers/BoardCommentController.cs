@@ -48,7 +48,7 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpPut("{boardCommendId}")]
         public async Task<IActionResult> EditComment(int boardCommendId, [FromBody] BoardCommentDTO comment)
         {
-            string s = "";
+           
             if (boardCommendId <= 0)
             {
                 return BadRequest("Mismatch between URL ID and comment ID.");
@@ -65,8 +65,7 @@ namespace MC_GymMasterWebAPI.Controllers
         }
         [HttpPut("delete/{boardCommendId}")]
         public async Task<IActionResult> DeleteComment(int boardCommendId)
-        {
-            string s = "";
+        {            
             if (boardCommendId <= 0)
             {
                 return BadRequest("Mismatch between URL ID and comment ID.");
@@ -86,8 +85,7 @@ namespace MC_GymMasterWebAPI.Controllers
         public async Task<ActionResult<IList<MemberAndCommentInfoDTO>>> GetComments()
         {
             var comments = await _gymMasterService.GetComments();
-            await _hubContext.Clients.All.SendAsync("ReceiveComment", comments);
-            string test = "";
+            await _hubContext.Clients.All.SendAsync("ReceiveComment", comments);         
             if (comments != null)
                 return Ok(comments);
 

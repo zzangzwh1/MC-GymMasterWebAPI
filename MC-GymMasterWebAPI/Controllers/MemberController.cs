@@ -58,8 +58,7 @@ namespace MC_GymMasterWebAPI.Controllers
         }
         [HttpPost("edit")]
         public async Task<ActionResult<Member>> UpdateUserInfo([FromBody] MemberDTO memberDto)
-        {
-            string s = "";
+        {          
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -80,7 +79,6 @@ namespace MC_GymMasterWebAPI.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<MemberDTO>> InsertMember([FromBody] MemberDTO memberDto)
         {
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -120,9 +118,7 @@ namespace MC_GymMasterWebAPI.Controllers
             {
                 return Unauthorized(new { success = false, message = "Invalid Password" });
             }
-
-            // Assuming JWT token generation here (commented out)
-            // var token = GenerateJwtToken(user);
+          
 
             return Ok(new { success = true, message = "Authentication successful" });
         }
