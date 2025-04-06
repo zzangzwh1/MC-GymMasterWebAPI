@@ -1,7 +1,9 @@
 ﻿using MC_GymMasterWebAPI.DTOs;
+using MC_GymMasterWebAPI.HubConfig;
 using MC_GymMasterWebAPI.Interface;
 using MC_GymMasterWebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace MC_GymMasterWebAPI.Controllers
 {
@@ -10,15 +12,17 @@ namespace MC_GymMasterWebAPI.Controllers
     public class BoardCommentController : Controller
     {
         private readonly IGymMasterService _gymMasterService;
+        private readonly IHubContext<CommentHub> _hubContext;
 
-        public BoardCommentController(IGymMasterService gymMasterService)
+        public BoardCommentController(IGymMasterService gymMasterService, IHubContext<CommentHub> hubContext)
         {
             _gymMasterService = gymMasterService;
+            _hubContext = hubContext;
         }
         [HttpPost("AddComment")]
         public async Task<IActionResult> AddComment([FromBody] BoardCommentDTO comments)
         {
-            if (comments == null || string.IsNullOrWhiteSpace(comments.Comment) || comments.MemberId <= 0 || comments.ShareBoardId <= 0)
+            if (comments == null || string.IsNullOrWhiteSpace(comments.Comment) || string.IsNullOrEmpty(comments.MemberId) || comments.ShareBoardId <= 0)
             {
                 return BadRequest(new { message = "Invalid comment data provided." });
             }
@@ -26,8 +30,8 @@ namespace MC_GymMasterWebAPI.Controllers
             try
             {
                 // Call the service to add the comment
-                var addedComment = await _gymMasterService.AddComment(comments);
-
+                var addedComment = await _gymMasterService.AddComment(comments);         
+          
                 return Ok(new
                 {
                     message = "Comment added successfully."
@@ -44,7 +48,8 @@ namespace MC_GymMasterWebAPI.Controllers
         public async Task<ActionResult<IList<MemberAndCommentInfoDTO>>> GetComments()
         {
             var comments = await _gymMasterService.GetComments();
-            string s = "";
+            await _hubContext.Clients.All.SendAsync("ReceiveComment", comments);
+            string test = "";
             if (comments != null)
                 return Ok(comments);
 

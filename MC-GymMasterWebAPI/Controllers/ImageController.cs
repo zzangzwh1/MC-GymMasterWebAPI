@@ -19,12 +19,14 @@ namespace MC_GymMasterWebAPI.Controllers
     {
         private readonly IGymMasterService _gymMasterService;
         private readonly IHubContext<SHub> _hubContext;
+        private readonly IHubContext<ImageHub> _hubImageContext;
 
 
-        public ImageController(IGymMasterService gymMasterService, IHubContext<SHub> hubContext)
+        public ImageController(IGymMasterService gymMasterService, IHubContext<SHub> hubContext, IHubContext<ImageHub> hubImageContext)
         {
             _gymMasterService = gymMasterService;
             _hubContext = hubContext;
+            _hubImageContext = hubImageContext;
         }
 
         [HttpGet]
@@ -32,6 +34,7 @@ namespace MC_GymMasterWebAPI.Controllers
         {
             var memberImages = await _gymMasterService.GetEveryMemberImage();
 
+            await _hubImageContext.Clients.All.SendAsync("ReceiveImage", memberImages);
             if (memberImages != null && memberImages.Any())
             {
                 return Ok(memberImages);
@@ -54,7 +57,6 @@ namespace MC_GymMasterWebAPI.Controllers
          
             await _hubContext.Clients.All.SendAsync("ReceiveLikeCountUpdate", imageCounts);
 
-            string s = "";
             return Ok(imageCounts);
         }
 
@@ -99,11 +101,11 @@ namespace MC_GymMasterWebAPI.Controllers
         {
 
             if (image == null || image.Length == 0 || memberId <= 0)
-                return BadRequest("No file uploaded.");
-
+                return BadRequest("No file uploaded.");           
             try
             {
                 await _gymMasterService.UploadImage(image, memberId);
+         
                 return Ok("Image uploaded successfully.");
             }
             catch (Exception ex)

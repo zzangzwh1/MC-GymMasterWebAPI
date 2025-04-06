@@ -75,6 +75,8 @@ app.UseCors("AllowAll");
 app.UseAuthentication(); // Ensure you have authentication services configured if you use this
 app.UseAuthorization();
 app.MapHub<SHub>("/shub");
+app.MapHub<CommentHub>("/commentHub");
+app.MapHub<ImageHub>("/imageHub");
 app.MapControllers();
 
 app.Run();

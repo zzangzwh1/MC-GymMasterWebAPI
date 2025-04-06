@@ -162,7 +162,8 @@ namespace MC_GymMasterWebAPI.Repository
                         Password = i.Password,
                         Phone = i.Phone,
                         Sex = i.Sex,
-                        UserId = i.UserId
+                        UserId = i.UserId,
+                         
                     })
                     .FirstOrDefaultAsync();
             }
@@ -412,14 +413,15 @@ namespace MC_GymMasterWebAPI.Repository
 
         #region BoardComment
         public async Task<BoardComment> AddComment(BoardCommentDTO comments)
-        {
+        {   
+            var memberId = await _dbContext.Members.Where(i => i.UserId == comments.MemberId).Select(i=>i.MemberId).FirstOrDefaultAsync();
             var boardComment = new BoardComment
             {
                 Comment = comments.Comment,
                 CreationgDate = DateOnly.FromDateTime(DateTime.Now),
                 ExpirationDate = DateOnly.FromDateTime(new DateTime(2099, 12, 31)),
                 LastModifiedDate = DateOnly.FromDateTime(DateTime.Now),
-                MemberId = comments.MemberId,
+                MemberId = memberId,
                 ShareBoardId = comments.ShareBoardId
             };
 
@@ -440,8 +442,8 @@ namespace MC_GymMasterWebAPI.Repository
             var result = from m in _dbContext.Members
                          join b in _dbContext.BoardComments
                          on m.MemberId equals b.MemberId
-                         where b.ExpirationDate >= DateOnly.FromDateTime(DateTime.Now)
-                         orderby b.CreationgDate descending
+                         where b.ExpirationDate > DateOnly.FromDateTime(DateTime.Now)
+                         orderby b.BoardCommentId descending
                          select new MemberAndCommentInfoDTO
                          {
                              MemberId = m.MemberId,
@@ -453,7 +455,9 @@ namespace MC_GymMasterWebAPI.Repository
                              UserId = m.UserId,
                              ShareBoardId = b.ShareBoardId,
                              Comment = b.Comment,
+                             BoardCommentId = b.BoardCommentId
                          };
+            string test = "";
             return await result.ToListAsync() ?? null;
 
 

@@ -17,5 +17,6 @@
         public int MemberId { get; set; }
 
         public string? Comment { get; set; }
+        public int BoardCommentId { get; set; }
     }
 }
