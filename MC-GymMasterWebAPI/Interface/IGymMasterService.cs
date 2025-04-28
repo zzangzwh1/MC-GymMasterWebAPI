@@ -1,6 +1,7 @@
 ﻿using MC_GymMasterWebAPI.DTOs;
 using MC_GymMasterWebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace MC_GymMasterWebAPI.Interface
 {
@@ -29,6 +30,8 @@ namespace MC_GymMasterWebAPI.Interface
         Task<List<ImageLikeDTO>> GetLikedImage(string member);
         Task<string> UploadImageLike(ImageLikeDTO like);
         Task<ShareBoard> DeleteImage(int shareBoardId);
+        Task<IList<ShareBoardImages>> GetScrollDownCurrentPageImages(int shardboardId, int page);
+        Task<IList<ShareBoardImages>> GetScrollUpCurrentPageImages(int shardboardId, int page);
 
         Task<List<ImageLikeCountDTO>> GetLikedImage();
 
@@ -36,7 +39,7 @@ namespace MC_GymMasterWebAPI.Interface
 
         #region BoardComment
         Task<BoardComment> AddComment(BoardCommentDTO comments);
-        Task<IList<MemberAndCommentInfoDTO>> GetComments();
+        Task<IList<MemberAndCommentInfoDTO>> GetComments(IList<ShareBoardImages> images);
         Task<Result> EditComment(int boardCommendId, BoardCommentDTO comment);
         Task<Result> DeleteComment(int boardCommendId);
         #endregion

@@ -29,8 +29,7 @@ namespace MC_GymMasterWebAPI.Controllers
             }
 
             try
-            {
-                // Call the service to add the comment
+            {           
                 var addedComment = await _gymMasterService.AddComment(comments);         
           
                 return Ok(new
@@ -76,15 +75,12 @@ namespace MC_GymMasterWebAPI.Controllers
                 return Ok(deleteComment);
             }
 
-
-
-
             return BadRequest("BoardComment id is not exist");
         }
-        [HttpGet("GetComments")]
-        public async Task<ActionResult<IList<MemberAndCommentInfoDTO>>> GetComments()
+        [HttpPost("GetComments")]
+        public async Task<ActionResult<IList<MemberAndCommentInfoDTO>>> GetComments(List<ShareBoardImages> images)
         {
-            var comments = await _gymMasterService.GetComments();
+            var comments = await _gymMasterService.GetComments(images);
             await _hubContext.Clients.All.SendAsync("ReceiveComment", comments);         
             if (comments != null)
                 return Ok(comments);

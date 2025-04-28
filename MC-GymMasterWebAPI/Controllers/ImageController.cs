@@ -44,6 +44,36 @@ namespace MC_GymMasterWebAPI.Controllers
 
 
         }
+        [HttpGet("getScrollDownImages")]
+        public async Task<ActionResult<ShareBoardImages>> GetScrollDownImages(int shareBoardId, int page)
+        {          
+         
+            var  memberImages = await _gymMasterService.GetScrollDownCurrentPageImages(shareBoardId,page);                      
+
+            await _hubImageContext.Clients.All.SendAsync("ReceiveImage", memberImages);
+            if (memberImages != null && memberImages.Any())
+            {
+                return Ok(memberImages);
+            }
+
+            return NotFound();
+        }
+        [HttpGet("getScrollUpImages")]
+        public async Task<ActionResult<ShareBoardImages>> GetScrollUpImages(int shareBoardId, int page)
+        {
+
+            var memberImages = await _gymMasterService.GetScrollUpCurrentPageImages(shareBoardId, page);
+  
+            await _hubImageContext.Clients.All.SendAsync("ReceiveImage", memberImages);
+            if (memberImages != null && memberImages.Any())
+            {
+                return Ok(memberImages);
+            }
+
+            return NotFound();
+        }
+
+
         [HttpGet("likeCount")]
         public async Task<IActionResult> GetImageLikeCount()
         {

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace MC_GymMasterWebAPI.Repository
@@ -299,7 +300,129 @@ namespace MC_GymMasterWebAPI.Repository
 
             return null;
         }
+        public async Task<IList<ShareBoardImages>> GetScrollDownCurrentPageImages(int shardboardId, int page)
+        {
+            IList<ShareBoardImages> images = new List<ShareBoardImages>();
+            if (shardboardId <= 0)
+            {
+                images = await _dbContext.ShareBoards
+                .Where(m => m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                .OrderByDescending(m => m.ShareBoardId)
+                .Take(page)
+                .Select(m => new ShareBoardImages
+                {
+                    ShareBoardId = m.ShareBoardId,
+                    MemberId = m.MemberId,
+                    ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,
+                    CreationDate = m.CreationDate,
+                    ExpirationDate = m.ExpirationDate,
+                    LastModified = m.LastModified
+                })
+                .ToListAsync();
+            }
+            else {
+                images = await _dbContext.ShareBoards
+                .Where(m => m.ShareBoardId < shardboardId && m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                .OrderByDescending(m => m.ShareBoardId) 
+                .Take(page)
+                .Select(m => new ShareBoardImages
+                {
+                    ShareBoardId = m.ShareBoardId,
+                    MemberId = m.MemberId,
+                    ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,
+                    CreationDate = m.CreationDate,
+                    ExpirationDate = m.ExpirationDate,
+                    LastModified = m.LastModified
+                })
+                .ToListAsync();
+                if (!images.Any() || images.Count< page) {
 
+                    images = await _dbContext.ShareBoards
+                        .Where(m=>m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                        .OrderBy(m => m.ShareBoardId)
+                        .Take(page)
+                        .Select(m => new ShareBoardImages
+                        {
+                            ShareBoardId = m.ShareBoardId,
+                            MemberId = m.MemberId,
+                            ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,
+                            CreationDate = m.CreationDate,
+                            ExpirationDate = m.ExpirationDate,
+                            LastModified = m.LastModified
+                        })
+                        .ToListAsync();
+                }
+          
+            }
+
+          
+           
+
+            return images;
+        }
+        public async Task<IList<ShareBoardImages>> GetScrollUpCurrentPageImages(int shardboardId, int page)
+        {
+            IList<ShareBoardImages> images = new List<ShareBoardImages>();
+            if (shardboardId <= 0)
+            {
+                images = await _dbContext.ShareBoards
+                .Where(m => m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                .OrderByDescending(m => m.ShareBoardId)
+                .Take(page)
+                .Select(m => new ShareBoardImages
+                {
+                    ShareBoardId = m.ShareBoardId,
+                    MemberId = m.MemberId,
+                    ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,
+                    CreationDate = m.CreationDate,
+                    ExpirationDate = m.ExpirationDate,
+                    LastModified = m.LastModified
+                })
+                .ToListAsync();
+            }
+            else
+            {
+                images = await _dbContext.ShareBoards
+               .Where(m => m.ShareBoardId > shardboardId && m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+               .OrderBy(m => m.ShareBoardId)
+               .Take(page)
+               .Select(m => new ShareBoardImages
+               {
+                   ShareBoardId = m.ShareBoardId,
+                   MemberId = m.MemberId,
+                   ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,
+                   CreationDate = m.CreationDate,
+                   ExpirationDate = m.ExpirationDate,
+                   LastModified = m.LastModified
+               })
+               .ToListAsync();
+                if (!images.Any() || images.Count < page)
+                {
+
+                    images = await _dbContext.ShareBoards
+                      .Where(m => m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                      .OrderByDescending(m => m.ShareBoardId)
+                      .Take(page)
+                      .Select(m => new ShareBoardImages
+                      {
+                          ShareBoardId = m.ShareBoardId,
+                          MemberId = m.MemberId,
+                          ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,
+                          CreationDate = m.CreationDate,
+                          ExpirationDate = m.ExpirationDate,
+                          LastModified = m.LastModified
+                      })
+                      .ToListAsync();
+                }
+
+
+            }
+
+
+
+
+            return images;
+        }
         public async Task UploadImage(IFormFile image, int memberId)
         {
             if (image == null || image.Length == 0 || memberId <= 0)
@@ -391,11 +514,13 @@ namespace MC_GymMasterWebAPI.Repository
 
         }
 
-
         public async Task<List<ShareBoardImages>> GetEveryMemberImage()
         {
-            var memberImages = await _dbContext.ShareBoards
+           
+           return await _dbContext.ShareBoards
                 .Where(m => m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                .OrderByDescending(m => m.CreationDate)              
+          
                 .Select(m => new ShareBoardImages
                 {
                     ShareBoardId = m.ShareBoardId,
@@ -405,10 +530,8 @@ namespace MC_GymMasterWebAPI.Repository
                     ExpirationDate = m.ExpirationDate,
                     LastModified = m.LastModified
                 })
-                .OrderByDescending(m => m.CreationDate)
-                .ToListAsync();
+                .ToListAsync();      
 
-            return memberImages;
         }
         #endregion
 
@@ -441,7 +564,7 @@ namespace MC_GymMasterWebAPI.Repository
         public async Task<Result> EditComment(int boardCommendId, BoardCommentDTO comment)
         {
             var boardComment = await _dbContext.BoardComments
-       .FirstOrDefaultAsync(i => i.BoardCommentId == boardCommendId);
+                .FirstOrDefaultAsync(i => i.BoardCommentId == boardCommendId);
             if (boardComment != null)
             {
                 boardComment.Comment = comment.Comment;
@@ -477,28 +600,31 @@ namespace MC_GymMasterWebAPI.Repository
 
             };
         }
-        public async Task<IList<MemberAndCommentInfoDTO>> GetComments()
+        public async Task<IList<MemberAndCommentInfoDTO>> GetComments(IList<ShareBoardImages> image)
         {
-            var result = from m in _dbContext.Members
-                         join b in _dbContext.BoardComments
-                         on m.MemberId equals b.MemberId
-                         where b.ExpirationDate > DateOnly.FromDateTime(DateTime.Now)
-                         orderby b.BoardCommentId descending
-                         select new MemberAndCommentInfoDTO
-                         {
-                             MemberId = m.MemberId,
-                             Address = m.Address,
-                             Email = m.Email,
-                             FirstName = m.FirstName,
-                             LastName = m.LastName,
-                             Phone = m.Phone,
-                             UserId = m.UserId,
-                             ShareBoardId = b.ShareBoardId,
-                             Comment = b.Comment,
-                             BoardCommentId = b.BoardCommentId
-                         };
-            string test = "";
-            return await result.ToListAsync() ?? null;
+            var shareBoardIds = image.Select(img => img.ShareBoardId).ToList();
+            
+            var result = await (from m in _dbContext.Members
+                                join b in _dbContext.BoardComments
+                                on m.MemberId equals b.MemberId
+                                where b.ExpirationDate > DateOnly.FromDateTime(DateTime.Now)
+                                      && shareBoardIds.Contains(b.ShareBoardId) 
+                                orderby b.BoardCommentId descending
+                                select new MemberAndCommentInfoDTO
+                                {
+                                    MemberId = m.MemberId,
+                                    Address = m.Address,
+                                    Email = m.Email,
+                                    FirstName = m.FirstName,
+                                    LastName = m.LastName,
+                                    Phone = m.Phone,
+                                    UserId = m.UserId,
+                                    ShareBoardId = b.ShareBoardId,
+                                    Comment = b.Comment,
+                                    BoardCommentId = b.BoardCommentId
+                                }).ToListAsync();
+
+            return result;
 
 
         }
