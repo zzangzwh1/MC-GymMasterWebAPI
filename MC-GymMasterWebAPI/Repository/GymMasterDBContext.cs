@@ -62,7 +62,7 @@ namespace MC_GymMasterWebAPI.Repository
                     })
                     .Select(g => new YearCountDTO
                     {
-                        Year = g.Key.Month, // Corrected from g.Key.Month to g.Key.Year
+                        Year = g.Key.Month, 
                         YearCount = g.Count()
                     })
                     .OrderBy(r => r.Year)
@@ -418,9 +418,6 @@ namespace MC_GymMasterWebAPI.Repository
 
             }
 
-
-
-
             return images;
         }
         public async Task UploadImage(IFormFile image, int memberId)
@@ -440,15 +437,14 @@ namespace MC_GymMasterWebAPI.Repository
                     ProfileImage = imageBytes,
                     CreationDate = DateOnly.FromDateTime(DateTime.Now),
                     LastModified = DateOnly.FromDateTime(DateTime.Now),
-                    ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31")) // Example expiration
+                    ExpirationDate = DateOnly.FromDateTime(DateTime.Parse("2099-12-31")) 
                 };
 
                 _dbContext.ShareBoards.Add(shareBoard);
                 await _dbContext.SaveChangesAsync();
             }
             catch (Exception ex)
-            {
-                // Handle any exceptions that occur during the upload process
+            {                
                 throw new InvalidOperationException($"Error occurred while uploading image: {ex.Message}", ex);
             }
         }
@@ -659,8 +655,7 @@ namespace MC_GymMasterWebAPI.Repository
 
             }
             catch (Exception ex)
-            {
-                string s = ex.Message;
+            {               
                 return false;
             }
         }

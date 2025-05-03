@@ -57,8 +57,7 @@ namespace MC_GymMasterWebAPI.Controllers
             if (updateComment.IsSuccess)
             {
                 return Ok(updateComment);
-            }
-         
+            }         
 
             return BadRequest("BoardComment id is not exist");
         }
