@@ -3,6 +3,7 @@
     public class MemberDTO
     {
   
+        public int MemberId { get; set; }
         public string UserId { get; set; } = null!;
         public string Password { get; set; } = null;
 

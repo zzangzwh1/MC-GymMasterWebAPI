@@ -138,43 +138,7 @@ namespace MC_GymMasterWebAPI.Repository
         public async Task<IEnumerable<Member>> GetAllMembers()
         {
             return await _dbContext.Members.ToListAsync();
-        }
-
-        public async Task<MemberDTO> GetMemberByUsername(string userId)
-        {
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return null;
-            }
-
-            try
-            {
-                return await _dbContext.Members
-                    .Where(m => m.UserId == userId)
-                    .Select(i => new MemberDTO
-                    {
-                        Address = i.Address,
-                        BirthDate = i.BirthDate,
-                        CreationDate = i.CreationDate,
-                        Email = i.Email,
-                        FirstName = i.FirstName,
-                        ExpirationDate = i.ExpirationDate,
-                        LastModifiedDate = i.LastModifiedDate,
-                        LastName = i.LastName,
-                        Password = i.Password,
-                        Phone = i.Phone,
-                        Sex = i.Sex,
-                        UserId = i.UserId,
-
-                    })
-                    .FirstOrDefaultAsync();
-            }
-            catch (Exception ex)
-            {
-
-                return null;
-            }
-        }
+        }          
         public async Task<Member> UpdateUserInfo(MemberDTO member)
         {
 

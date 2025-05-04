@@ -29,32 +29,18 @@ namespace MC_GymMasterWebAPI.Controllers
 
             return Ok(members);
         }
-        [HttpGet("userId")]
-        public async Task<ActionResult<MemberDTO>> GetMemberByUsername(string userId)
+      
+        [HttpGet("memberId")]
+        public async Task<ActionResult<Member>> GetMemberByUserId(string memberId)
         {
-
-            var member = await _gymMasterService.GetMemberByUsername(userId);
+            var member = await _gymMasterService.GetMemberIdByUserId(memberId);
 
             if (member != null)
             {
                 return Ok(member);
             }
 
-            return NotFound();
-        }
-
-        [HttpGet("memberId")]
-        public async Task<ActionResult<Member>> GetMemberIdByUserId(string memberId)
-        {
-
-            var member = await _gymMasterService.GetMemberIdByUserId(memberId);
-
-            if (member != null)
-            {
-                return Ok(member.MemberId);
-            }
-
-            return NotFound();
+            return new Member();
         }
         [HttpPost("edit")]
         public async Task<ActionResult<Member>> UpdateUserInfo([FromBody] MemberDTO memberDto)
@@ -85,8 +71,7 @@ namespace MC_GymMasterWebAPI.Controllers
             }
 
             try
-            {
-             
+            {             
                 var newMember = await _gymMasterService.InsertMember(memberDto);
 
                 if (newMember == null)
@@ -94,7 +79,7 @@ namespace MC_GymMasterWebAPI.Controllers
                     return StatusCode(500, "An error occurred while saving the member.");
                 }
 
-                return CreatedAtAction(nameof(GetMemberByUsername), new { userId = newMember.UserId }, newMember);
+                return CreatedAtAction(nameof(GetMemberByUserId), new { userId = newMember.UserId }, newMember);
             }
             catch (Exception ex)
             {
@@ -133,7 +118,7 @@ namespace MC_GymMasterWebAPI.Controllers
 
             try
             {
-                var getMember = await _gymMasterService.GetMemberByUsername(requestPassword.userId);
+                var getMember = await _gymMasterService.GetMemberIdByUserId(requestPassword.userId);
 
                 if (getMember == null)
                 {
