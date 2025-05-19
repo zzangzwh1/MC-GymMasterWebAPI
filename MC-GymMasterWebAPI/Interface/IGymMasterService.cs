@@ -19,6 +19,7 @@ namespace MC_GymMasterWebAPI.Interface
         Task<MemberDTO> InsertMember(MemberDTO memberDto);
         Task<Member> Authenticate(LoginDto loginInfo);
         Task<Member> UpdateUserInfo(MemberDTO member);
+        Task<string> GenerateJWTToken(Member user);
 
         #endregion
 
@@ -26,13 +27,13 @@ namespace MC_GymMasterWebAPI.Interface
         Task<List<ShareBoardImages>> GetEveryMemberImage();
         Task<List<ShareBoardImages>> GetMemberImage(int memberId);
         Task UploadImage(IFormFile image, int memberId);
-        Task<List<ImageLikeDTO>> GetLikedImage(string member);
+        Task<List<ImageLikeDTO>> GetLikedImage(List<ShareBoardImages> memberImages);
         Task<string> UploadImageLike(ImageLikeDTO like);
         Task<ShareBoard> DeleteImage(int shareBoardId);
-        Task<IList<ShareBoardImages>> GetScrollDownCurrentPageImages(int shardboardId, int page);
-        Task<IList<ShareBoardImages>> GetScrollUpCurrentPageImages(int shardboardId, int page);
+        Task<IList<ShareBoardImages>> GetScrollDownCurrentPageImages(int shardboardId, int page,string userId);
+        Task<IList<ShareBoardImages>> GetScrollUpCurrentPageImages(int shardboardId, int page, string userId);
 
-        Task<List<ImageLikeCountDTO>> GetLikedImage();
+       // Task<List<ImageLikeCountDTO>> GetLikedImage();
 
         #endregion
 

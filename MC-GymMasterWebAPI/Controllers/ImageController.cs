@@ -3,6 +3,7 @@ using MC_GymMasterWebAPI.DTOs;
 using MC_GymMasterWebAPI.HubConfig;
 using MC_GymMasterWebAPI.Interface;
 using MC_GymMasterWebAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -30,6 +31,7 @@ namespace MC_GymMasterWebAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<ShareBoard>> GetEveryMemberImage()
         {
             var memberImages = await _gymMasterService.GetEveryMemberImage();
@@ -45,10 +47,11 @@ namespace MC_GymMasterWebAPI.Controllers
 
         }
         [HttpGet("getScrollDownImages")]
-        public async Task<ActionResult<ShareBoardImages>> GetScrollDownImages(int shareBoardId, int page)
+        [Authorize]
+        public async Task<ActionResult<ShareBoardImages>> GetScrollDownImages(int shareBoardId, int page,string userId)
         {          
          
-            var  memberImages = await _gymMasterService.GetScrollDownCurrentPageImages(shareBoardId,page);                      
+            var  memberImages = await _gymMasterService.GetScrollDownCurrentPageImages(shareBoardId,page, userId);                      
 
             await _hubImageContext.Clients.All.SendAsync("ReceiveImage", memberImages);
             if (memberImages != null && memberImages.Any())
@@ -59,10 +62,10 @@ namespace MC_GymMasterWebAPI.Controllers
             return NotFound();
         }
         [HttpGet("getScrollUpImages")]
-        public async Task<ActionResult<ShareBoardImages>> GetScrollUpImages(int shareBoardId, int page)
+        [Authorize]
+        public async Task<ActionResult<ShareBoardImages>> GetScrollUpImages(int shareBoardId, int page,string userId)
         {
-
-            var memberImages = await _gymMasterService.GetScrollUpCurrentPageImages(shareBoardId, page);
+            var memberImages = await _gymMasterService.GetScrollUpCurrentPageImages(shareBoardId, page, userId);
   
             await _hubImageContext.Clients.All.SendAsync("ReceiveImage", memberImages);
             if (memberImages != null && memberImages.Any())
@@ -74,7 +77,8 @@ namespace MC_GymMasterWebAPI.Controllers
         }
 
 
-        [HttpGet("likeCount")]
+      /*  [HttpGet("likeCount")]
+        [Authorize]
         public async Task<IActionResult> GetImageLikeCount()
         {
             var imageCounts = await _gymMasterService.GetLikedImage();
@@ -88,8 +92,9 @@ namespace MC_GymMasterWebAPI.Controllers
 
             return Ok(imageCounts);
         }
-
+        */
         [HttpGet("memberId")]
+        [Authorize]
         public async Task<ActionResult<List<ShareBoardImages>>> GetMemberImage(int memberId)
         {
             var memberImages = await _gymMasterService.GetMemberImage(memberId);
@@ -101,19 +106,23 @@ namespace MC_GymMasterWebAPI.Controllers
 
             return NotFound();
         }
-        [HttpGet("member")]
-        public async Task<ActionResult<List<ImageLikeDTO>>> GetLikedImage(string member)
+        [HttpPost("GetLikes")]
+        [Authorize]
+        public async Task<ActionResult<List<ImageLikeDTO>>> GetLikes(List<ShareBoardImages> images)
         {
-           var memberLikedImages = await _gymMasterService.GetLikedImage(member);
-           if(memberLikedImages.Any())
+           var memberLikedImages = await _gymMasterService.GetLikedImage(images);
+            if (memberLikedImages.Any())
+            {
+                await _hubContext.Clients.All.SendAsync("ReceiveLikeCountUpdate", memberLikedImages);
                 return Ok(memberLikedImages);
+            }
 
             return NotFound();
         }
         [HttpDelete("Delete")]
+        [Authorize]
         public async Task<ActionResult<ShareBoard>> DeleteImage(int shareBoardId)
-        {
-            string s = "";
+        {          
             var deleteImage = await _gymMasterService.DeleteImage(shareBoardId);
 
             if (deleteImage != null)
@@ -125,6 +134,7 @@ namespace MC_GymMasterWebAPI.Controllers
         }
 
         [HttpPost("upload")]
+        [Authorize]
         public async Task<IActionResult> UploadImage([FromForm] IFormFile image, [FromForm] int memberId)
         {
 
@@ -141,7 +151,8 @@ namespace MC_GymMasterWebAPI.Controllers
                 return NotFound();
             }
         }
-        [HttpPost("uploadImageLike")]
+       [HttpPost("uploadImageLike")]
+       [Authorize]
         public async Task<IActionResult> UploadImageLike(ImageLikeDTO like)
         {      
            

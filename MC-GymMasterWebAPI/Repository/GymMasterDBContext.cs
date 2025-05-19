@@ -5,11 +5,16 @@ using MC_GymMasterWebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
+using System.Security.Claims;
+using System.Text;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -20,10 +25,15 @@ namespace MC_GymMasterWebAPI.Repository
     {
         private readonly GymMasterContext _dbContext;
         private readonly MailSettings _mailSetting;
-        public GymMasterDBContext(GymMasterContext dbContext, IOptions<MailSettings> options)
+        private readonly IConfiguration _configuration;
+        private readonly IConfigurationSection jwtSettings;
+    //    private readonly IHttpContextAccessor _httpContextAccessor;
+        public GymMasterDBContext(GymMasterContext dbContext, IOptions<MailSettings> options, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _mailSetting = options.Value;
+            _configuration = configuration;
+            jwtSettings = _configuration.GetSection("Jwt");          
         }
 
         #region WorkoutSet
@@ -162,6 +172,28 @@ namespace MC_GymMasterWebAPI.Repository
             await _dbContext.SaveChangesAsync();
             return existingMember;
         }
+        public async Task<string> GenerateJWTToken(Member user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.FirstName + user.LastName),
+                new Claim(ClaimTypes.NameIdentifier, user.UserId),
+    
+            };        
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
+            var creds = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddHours(1),              
+                signingCredentials: creds                 
+
+            );
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            return tokenHandler.WriteToken(token); 
+        }
 
         public async Task<Member> GetMemberIdByUserId(string memberId)
         {
@@ -227,30 +259,42 @@ namespace MC_GymMasterWebAPI.Repository
                              }).OrderByDescending(m => m.CreationDate)
                              .ToListAsync();
         }
-        public async Task<List<ImageLikeDTO>> GetLikedImage(string member)
+        public async Task<List<ImageLikeDTO>> GetLikedImage(List<ShareBoardImages> images)
         {
-            return await _dbContext.ImageLikes.Where(i => i.UserId == member && i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
-                    .Select(i => new ImageLikeDTO
+            var shareBoardIds = images.Select(img => img.ShareBoardId).ToList();
+
+            return await Task.FromResult(
+                shareBoardIds
+                    .GroupJoin(
+                        _dbContext.ImageLikes
+                            .Where(i => i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now)),
+                        id => id,
+                        like => like.ShareBoardId,
+                        (id, likes) => new ImageLikeDTO
+                        {
+                            ShareBoardId = id,
+                            UserId = likes.Select(l => l.UserId).FirstOrDefault(),
+                            TotalCount = likes.Count()
+                        }
+                    )
+                    .ToList()
+            );
+        }
+        /*    public async Task<List<ImageLikeCountDTO>> GetLikedImage()
+            {
+                var likedImageCounts = await _dbContext.ImageLikes
+                    .Where(i => i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                    .GroupBy(i => i.ShareBoardId)
+                    .Select(group => new ImageLikeCountDTO
                     {
+                        ShareBoardId = group.Key,
+                        TotalCount = group.Count()
+                    })
+                    .ToListAsync();
 
-                        ShareBoardId = i.ShareBoardId,
-                        UserId = i.UserId
-                    }).ToListAsync();
-        }
-        public async Task<List<ImageLikeCountDTO>> GetLikedImage()
-        {
-            var likedImageCounts = await _dbContext.ImageLikes
-                .Where(i => i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
-                .GroupBy(i => i.ShareBoardId)
-                .Select(group => new ImageLikeCountDTO
-                {
-                    ShareBoardId = group.Key,
-                    TotalCount = group.Count()
-                })
-                .ToListAsync();
-
-            return likedImageCounts;
-        }
+                return likedImageCounts;
+            }
+        */
         public async Task<ShareBoard> DeleteImage(int shareBoardId)
         {
             var deleteImage = await _dbContext.ShareBoards
@@ -264,7 +308,7 @@ namespace MC_GymMasterWebAPI.Repository
 
             return null;
         }
-        public async Task<IList<ShareBoardImages>> GetScrollDownCurrentPageImages(int shardboardId, int page)
+        public async Task<IList<ShareBoardImages>> GetScrollDownCurrentPageImages(int shardboardId, int page, string userId)
         {
             IList<ShareBoardImages> images = new List<ShareBoardImages>();
             if (shardboardId <= 0)
@@ -318,15 +362,29 @@ namespace MC_GymMasterWebAPI.Repository
                 }
           
             }
+            if (images.Any())
+            {
+                var likedShareBoardIds = await _dbContext.ImageLikes
+                   .Where(i => i.UserId == userId && i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                   .Select(i => i.ShareBoardId)
+                   .ToListAsync();
 
-          
-           
+                foreach (var image in images.Where(i => likedShareBoardIds.Contains(i.ShareBoardId)))
+                {
+                    image.LikeImage = true;
+                }
+            }
+
+
+
 
             return images;
         }
-        public async Task<IList<ShareBoardImages>> GetScrollUpCurrentPageImages(int shardboardId, int page)
+        public async Task<IList<ShareBoardImages>> GetScrollUpCurrentPageImages(int shardboardId, int page, string userId)
         {
             IList<ShareBoardImages> images = new List<ShareBoardImages>();
+           
+                      
             if (shardboardId <= 0)
             {
                 images = await _dbContext.ShareBoards
@@ -338,6 +396,7 @@ namespace MC_GymMasterWebAPI.Repository
                     ShareBoardId = m.ShareBoardId,
                     MemberId = m.MemberId,
                     ProfileImage = m.ProfileImage != null ? $"data:image/png;base64,{Convert.ToBase64String(m.ProfileImage)}" : null,
+                    
                     CreationDate = m.CreationDate,
                     ExpirationDate = m.ExpirationDate,
                     LastModified = m.LastModified
@@ -381,8 +440,22 @@ namespace MC_GymMasterWebAPI.Repository
 
 
             }
+            if (images.Any())
+            {
+                var likedShareBoardIds = await _dbContext.ImageLikes
+                   .Where(i => i.UserId == userId && i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now))
+                   .Select(i => i.ShareBoardId)
+                   .ToListAsync();
 
+                foreach (var image in images.Where(i => likedShareBoardIds.Contains(i.ShareBoardId)))
+                {
+                    image.LikeImage = true;
+                }
+            }
+
+                   
             return images;
+        
         }
         public async Task UploadImage(IFormFile image, int memberId)
         {
@@ -498,6 +571,7 @@ namespace MC_GymMasterWebAPI.Repository
         #region BoardComment
         public async Task<BoardComment> AddComment(BoardCommentDTO comments)
         {
+            string s = "";
             var memberId = await _dbContext.Members.Where(i => i.UserId == comments.MemberId).Select(i => i.MemberId).FirstOrDefaultAsync();
             var boardComment = new BoardComment
             {

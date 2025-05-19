@@ -2,6 +2,7 @@
 using MC_GymMasterWebAPI.DTOs;
 using MC_GymMasterWebAPI.Interface;
 using MC_GymMasterWebAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -20,6 +21,7 @@ namespace MC_GymMasterWebAPI.Controllers
         }
 
         [HttpPost("insertWorkout")]
+        [Authorize]
         public async Task<IActionResult> InsertWorkout([FromBody] List<WorkoutSetDTO> insertWorkout)
         {
            
@@ -42,6 +44,7 @@ namespace MC_GymMasterWebAPI.Controllers
         }
 
         [HttpGet("userId")]
+        [Authorize]
         public async Task<ActionResult<List<PartCountDTO>>> GetMemberWorkoutPartCounts(string userId)
         {
           
@@ -64,6 +67,7 @@ namespace MC_GymMasterWebAPI.Controllers
         }
 
         [HttpGet("id")]
+        [Authorize]
         public async Task<ActionResult<List<YearCountDTO>>> GetAnnualWorkoutStatus(string id)
         {
             
@@ -79,8 +83,7 @@ namespace MC_GymMasterWebAPI.Controllers
                 return NotFound();
             }
             catch (Exception ex)
-            {
-             
+            {             
                 return StatusCode(500, "An error occurred while processing your request.");
             }
         }

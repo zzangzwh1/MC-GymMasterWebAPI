@@ -2,6 +2,7 @@
 using MC_GymMasterWebAPI.DTOs;
 using MC_GymMasterWebAPI.Interface;
 using MC_GymMasterWebAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MC_GymMasterWebAPI.Controllers
@@ -18,6 +19,7 @@ namespace MC_GymMasterWebAPI.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Member>>> GetAllMembers()
         {
 
@@ -31,8 +33,10 @@ namespace MC_GymMasterWebAPI.Controllers
         }
       
         [HttpGet("memberId")]
+        [AllowAnonymous]
         public async Task<ActionResult<Member>> GetMemberByUserId(string memberId)
         {
+            string s = "";
             var member = await _gymMasterService.GetMemberIdByUserId(memberId);
 
             if (member != null)
@@ -43,6 +47,7 @@ namespace MC_GymMasterWebAPI.Controllers
             return new Member();
         }
         [HttpPost("edit")]
+        [AllowAnonymous]
         public async Task<ActionResult<Member>> UpdateUserInfo([FromBody] MemberDTO memberDto)
         {          
             if (!ModelState.IsValid)
@@ -63,8 +68,10 @@ namespace MC_GymMasterWebAPI.Controllers
 
 
         [HttpPost("register")]
+        [AllowAnonymous]
         public async Task<ActionResult<MemberDTO>> InsertMember([FromBody] MemberDTO memberDto)
         {
+            string test = "";
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -87,28 +94,30 @@ namespace MC_GymMasterWebAPI.Controllers
                 return StatusCode(500, "An error occurred while saving the member.");
             }
         }
-        [HttpPost("authenticate")]
+       [HttpPost("authenticate")]
+       [AllowAnonymous]
         public async Task<IActionResult> Authenticate([FromBody] LoginDto loginInfo)
         {        
             var user = await _gymMasterService.Authenticate(loginInfo);
-
            
             if (user == null)
             {
                 return Unauthorized(new { success = false, message = "Invalid UserId" });
             }
-
-            // Check password
+         
             if (user.Password != loginInfo.Password)
             {
                 return Unauthorized(new { success = false, message = "Invalid Password" });
             }
+
+            var jwtToken = await _gymMasterService.GenerateJWTToken(user);
           
 
-            return Ok(new { success = true, message = "Authentication successful" });
+            return Ok(new { success = true, message = jwtToken });
         }
        
         [HttpPost("requestPassword")]
+        [Authorize]
         public async Task<IActionResult> RequestPassword([FromBody] RequestPasswordDTO requestPassword)
         {
             if (requestPassword.selectedValue != "email" || string.IsNullOrEmpty(requestPassword.userId))

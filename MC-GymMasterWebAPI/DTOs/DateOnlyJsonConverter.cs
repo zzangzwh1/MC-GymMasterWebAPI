@@ -1,10 +1,11 @@
-﻿using System.Text.Json;
+﻿using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace MC_GymMasterWebAPI.DTOs
 {
     public class DateOnlyJsonConverter : JsonConverter<DateOnly>
-    {
+    {     
         public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             // Check if it's an object and read it as a JSON object
