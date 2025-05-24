@@ -14,9 +14,9 @@ namespace MC_GymMasterWebAPI.Controllers
     public class BoardCommentController : Controller
     {
         private readonly IGymMasterService _gymMasterService;
-        private readonly IHubContext<CommentHub> _hubContext;
+        private readonly IHubContext<SHub> _hubContext;
 
-        public BoardCommentController(IGymMasterService gymMasterService, IHubContext<CommentHub> hubContext)
+        public BoardCommentController(IGymMasterService gymMasterService, IHubContext<SHub> hubContext)
         {
             _gymMasterService = gymMasterService;
             _hubContext = hubContext;

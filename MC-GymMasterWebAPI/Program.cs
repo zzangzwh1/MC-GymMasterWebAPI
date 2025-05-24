@@ -110,8 +110,7 @@ builder.Services.AddAuthentication(options =>
             var accessToken = context.Request.Query["access_token"];
             var path = context.HttpContext.Request.Path;
 
-            if (!string.IsNullOrEmpty(accessToken) &&
-                (path.StartsWithSegments("/shub") || path.StartsWithSegments("/commentHub") || path.StartsWithSegments("/imageHub")))
+            if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/shub") ))
             {
                 context.Token = accessToken;
             }
@@ -143,8 +142,6 @@ app.UseCors("AllowAll");
 app.UseAuthentication(); 
 app.UseAuthorization();
 app.MapHub<SHub>("/shub");
-app.MapHub<CommentHub>("/commentHub");
-app.MapHub<ImageHub>("/imageHub");
 app.MapControllers();
 
 app.Run();

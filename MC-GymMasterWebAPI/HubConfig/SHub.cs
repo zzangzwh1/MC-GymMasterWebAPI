@@ -13,19 +13,11 @@ namespace MC_GymMasterWebAPI.HubConfig
 
             await Clients.All.SendAsync("ReceiveLikeCountUpdate", memberLikedImages);
         }
-    }
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class CommentHub : Hub
-    {
         public async Task SendAddComment(IList<MemberAndCommentInfoDTO> comments)
         {
 
             await Clients.All.SendAsync("ReceiveComment", comments);
         }
-    }
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class ImageHub : Hub
-    {
         public async Task SendGetImage(IList<ShareBoardImages> images)
         {
             await Clients.All.SendAsync("ReceiveImage", images);

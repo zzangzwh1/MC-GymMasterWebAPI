@@ -20,14 +20,12 @@ namespace MC_GymMasterWebAPI.Controllers
     {
         private readonly IGymMasterService _gymMasterService;
         private readonly IHubContext<SHub> _hubContext;
-        private readonly IHubContext<ImageHub> _hubImageContext;
+      
 
-
-        public ImageController(IGymMasterService gymMasterService, IHubContext<SHub> hubContext, IHubContext<ImageHub> hubImageContext)
+        public ImageController(IGymMasterService gymMasterService, IHubContext<SHub> hubContext/*, IHubContext<ImageHub> hubImageContext*/)
         {
             _gymMasterService = gymMasterService;
-            _hubContext = hubContext;
-            _hubImageContext = hubImageContext;
+            _hubContext = hubContext;         
         }
 
         [HttpGet]
@@ -36,7 +34,7 @@ namespace MC_GymMasterWebAPI.Controllers
         {
             var memberImages = await _gymMasterService.GetEveryMemberImage();
 
-            await _hubImageContext.Clients.All.SendAsync("ReceiveImage", memberImages);
+            await _hubContext.Clients.All.SendAsync("ReceiveImage", memberImages);
             if (memberImages != null && memberImages.Any())
             {
                 return Ok(memberImages);
@@ -53,7 +51,7 @@ namespace MC_GymMasterWebAPI.Controllers
          
             var  memberImages = await _gymMasterService.GetScrollDownCurrentPageImages(shareBoardId,page, userId);                      
 
-            await _hubImageContext.Clients.All.SendAsync("ReceiveImage", memberImages);
+            await _hubContext.Clients.All.SendAsync("ReceiveImage", memberImages);
             if (memberImages != null && memberImages.Any())
             {
                 return Ok(memberImages);
@@ -67,7 +65,7 @@ namespace MC_GymMasterWebAPI.Controllers
         {
             var memberImages = await _gymMasterService.GetScrollUpCurrentPageImages(shareBoardId, page, userId);
   
-            await _hubImageContext.Clients.All.SendAsync("ReceiveImage", memberImages);
+            await _hubContext.Clients.All.SendAsync("ReceiveImage", memberImages);
             if (memberImages != null && memberImages.Any())
             {
                 return Ok(memberImages);
@@ -77,22 +75,6 @@ namespace MC_GymMasterWebAPI.Controllers
         }
 
 
-      /*  [HttpGet("likeCount")]
-        [Authorize]
-        public async Task<IActionResult> GetImageLikeCount()
-        {
-            var imageCounts = await _gymMasterService.GetLikedImage();
-
-            if (imageCounts == null)
-            {
-                return NotFound("Image not found");
-            }       
-
-            await _hubContext.Clients.All.SendAsync("ReceiveLikeCountUpdate", imageCounts);
-
-            return Ok(imageCounts);
-        }
-        */
         [HttpGet("memberId")]
         [Authorize]
         public async Task<ActionResult<List<ShareBoardImages>>> GetMemberImage(int memberId)
