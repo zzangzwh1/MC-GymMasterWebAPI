@@ -246,7 +246,7 @@ namespace MC_GymMasterWebAPI.Repository
         #region Image
         public async Task<List<ShareBoardImages>> GetMemberImage(int memberId)
         {
-            return await _dbContext.ShareBoards
+            var currentMemberImage=  await _dbContext.ShareBoards
                              .Where(m => m.ExpirationDate > DateOnly.FromDateTime(DateTime.Now) && m.MemberId == memberId)
                              .Select(m => new ShareBoardImages
                              {
@@ -258,6 +258,24 @@ namespace MC_GymMasterWebAPI.Repository
                                  LastModified = m.LastModified
                              }).OrderByDescending(m => m.CreationDate)
                              .ToListAsync();
+
+
+            if (currentMemberImage.Any())
+            {                
+                var currentMemberShareBoardIds = await (from m in _dbContext.Members
+                                                        join i in _dbContext.ImageLikes on m.UserId equals i.UserId
+                                                        where m.MemberId == memberId && i.ExpirationDate > DateOnly.FromDateTime(DateTime.Now)
+                                                        select i.ShareBoardId).ToListAsync();
+                
+                foreach (var image in currentMemberImage.Where(i => currentMemberShareBoardIds.Contains(i.ShareBoardId)))
+                {
+                    image.LikeImage = true;
+                }
+            
+
+            }
+            return currentMemberImage;
+
         }
         public async Task<List<ImageLikeDTO>> GetLikedImage(List<ShareBoardImages> images)
         {
